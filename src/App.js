@@ -8,63 +8,39 @@
  */
 
 import React from 'react';
-import { Router, Route, Link } from 'react-router-dom';
-import LeftSideBar from './js/LeftSideBar';
-import ThreadView from './js/ThreadView';
-import './css/App.css';
-import { request } from 'http';
+import {useState,useEffect} from 'react';
+import {getForumList} from './api/api'
+import {LeftSideBar} from './js/LeftSideBar';
+import {ThreadView} from './js/ThreadView';
+import './css/App.scss';
 
+function MainPage() {
+  //Hook
+  const [forumId,setForum] = useState(-1);//时间线
+  const [threadId,setThread] = useState(0);//串号
+  const [forumList,setForumList] = useState();
 
-//MainPage 主窗体视图
-class MainPage extends React.Component {
-  constructor(props) {
-    super(props);
-    /**
-     * 初始化代码
-     * forumID和threadID需要将URL解析的部分完成后一并完成
-     */
-    
-    this.state = {
-      forumId: 4,
-      threadId: 0,
-      page: 1
+  useEffect(() => {
+    async function fetchData() {
+      let res = await getForumList();
+      if(res.ok) {
+        console.log(res.json);
+        setForumList(res.json);
+      }
     }
-  }
-
-  changeForum = id => {
-    this.setState({forumId: id});
-  }
-
-  changeThread = id => {
-    this.setState({threadId: id});
-  }
-  
-  render() {
-    this.forumInfo = fetch('./data/getForumList.json')
-    .then(res => res.json())
-    .then(json => this.forumInfo = json);
-    return (
-      <div>
-      <LeftSideBar className="left-side-bar" detail={this.forumInfo}/>
-      <ThreadView
-        forumId={this.state.forumId}
-        changeForum={this.changeForum}
-        forumPage={this.state.forumPage}
-        changeThread={this.changeThread}
-      />
-      </div>
-    )
-  }
+    fetchData();
+  },[]);
+  return (
+    <>
+      <LeftSideBar className="LeftSideBar" forumList={forumList} />
+      <ThreadView className="ThreadView" id={} page={}/>
+    </>
+  )
 }
 //
 function App() {
   return (
-    <Router>
-      <Switch>
-      <Route exact path="/" Component={MainPage} />
-      <Route path="/" Component={MainPage} />
-      </Switch>
-    </Router>
+    <MainPage className="MainPage"/>
   )
 }
 

@@ -1,15 +1,7 @@
 import React from 'react';
-//测试数据，用后删除
-import * as testData from '../testData';
 //文章主体h-content
-function ThreadView(props) {
-    return (
-      <>
-        <ThreadList forumId={props.forumId}/>
-        <ThreadPage page={props.forumPage}/>
-      </>
-    );
-  }
+
+
   
   //正文列表
   function ThreadList(props) {
@@ -83,4 +75,12 @@ function ThreadView(props) {
     )
   }
   
-export default ThreadView;
+  function ThreadView(props) {
+    return (
+      <>
+        <ThreadList forumId={props.forumId}/>
+        <ThreadPage page={props.forumPage}/>
+      </>
+    );
+  }
+export {ThreadView};

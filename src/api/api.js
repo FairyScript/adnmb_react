@@ -1,3 +1,5 @@
+import { parse } from "querystring";
+
 /**API
  * 
  */
@@ -5,55 +7,86 @@
 const path = {
     pathname: 'https://adnmb2.com/',
     apiPath: 'https://adnmb2.com/Api/',
-    cdnPath: 'https://nmbimg.fastmirror.org'
-}
+    cdnPath: 'https://nmbimg.fastmirror.org',
+    testPath: '/'
+};
 
-/**
- * 构建get请求
- * @param {string} type API Key
- * @param {object} params 
- */
-async function getFetch(type,params) {
-    let url = path.apiPath + type;
-    if(params) url.search = URLSearchParams(params);
-    console.log('GET Url:' + url);
-    try {
-        let res = await fetch(url,{
-            method: 'GET',
-            headers: {
-                'user-agent': 'HavefunClient-Dawn'
-            },
-            cache: 'no-cache'
-        });
-        if(!res.ok) {
-            throw Error(res.statusText);
-        }
-        return res.json();
-    } catch(err) {
-        console.log(err);
-    }
-}
 
-/**
- * 获取板块列表
- */
+//获取板块列表
 async function getForumList() {
-    return await getFetch('getForumList')
+    let url = path.testPath + 'getForumList';
+    let config = {
+        cache: 'no-cache',
+        headers: {"user-agent": "HavefunClient/Dawn"},
+        method: 'GET',
+        mode: 'no-cors'
+    }
+    try {
+        let res = await fetch(url,config);
+        if(res.ok) {
+            console.log('getForumList!');
+            let json = await res.json();
+            return {ok: true,json: json};
+        } else {
+            throw res;
+        }
+    } catch (error) {
+        console.log(error);
+        return {ok: false};
+    }
+    
 }
 
-/**
- * 请求板块/串内容
- * 默认综1
- * @param {string} type 请求类型
- * @param {Number} _id 板块ID/串号
- * @param {Number} _page 页数
- */
-async function getContent(type='showf',_id=4,_page=1) {
-    let params = {
-        id: _id,
-        page: _page
-    };
-    return await getFetch(type,params);
+//获取内容
+async function getContent(type='showf',id=-1,page=1) {
+    let url = path.testPath + type;
+    let config = {
+        cache: 'no-cache',
+        headers: {
+            "user-agent": "HavefunClient-Dawn",
+            "id": id,
+            "page": page
+        },
+        method: 'GET',
+        mode: 'no-cors'
+    }
+    try {
+        let res = await fetch(url,config);
+        if(res.ok) {
+            console.log('getContent!');
+            let json = await res.json();
+            return {ok: true,json: json};
+        } else {
+            throw res;
+        }
+    } catch (error) {
+        console.log(error);
+        return {ok: false};
+    }
+    
 }
 
-export {getForumList,getContent}
+//获取串内容
+function getThread(id,page=1) {
+    console.log('getThread!');
+    return getContent('thread',id,page);
+}
+
+//获取板块内容
+function getForum(id=-1,page=1) {
+    console.log('getForum!');
+    return getContent('showf',id,page)
+}
+
+//URL解析
+function getUrl() {
+    let url = window.location;
+    let parser = /\/(.+)\/(\d+)/.exec(url.pathname);
+    let e = {
+        viewmode: parser[1],//模式
+        threadId: parser[2],//主串号
+        replyId: /\?r=(\d+)/.exec(url.search)[1]//回应串号
+    }
+    return e;
+}
+export {getForumList,getForum,getThread,getUrl}

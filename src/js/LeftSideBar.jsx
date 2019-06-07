@@ -1,15 +1,15 @@
-import React from 'react';
-import {useState} from 'react';
-
-
-
+import React,{useContext} from 'react';
+import {DataDispatch} from './MainPage';
 //板块组
 function ForumGroup(props) {
+  const dispatch = useContext(DataDispatch);
   let c = props.content.forums.map(list => {
     
     return (
     <li 
       key={list.id}
+      onClick={dispatch({type: 'changeForum',id: list.id})}
+      //解析板块名称，时间线特殊解析
       dangerouslySetInnerHTML={{ __html: (list.showName === '' || list.name === '时间线') ? list.name : list.showName}}
     />)
   })

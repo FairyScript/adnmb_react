@@ -18,13 +18,13 @@ function ThreadView(props) {
 
 //正文列表
 function ThreadList(props) {
-  cosnt [content,setContent] = useState(null);
+  const [content,setContent] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
       if(props.id === 0) return null;
       if(props.mode === 'f') {
-        let res = await getForum(props.id,props.page);
+        let res = await getForum({id: props.id,page: props.page});
         if(res.ok) {
           console.log(res.json);
           const list = res.json.map(content => <ThreadContent content={content}/>)

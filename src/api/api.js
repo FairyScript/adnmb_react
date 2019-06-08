@@ -1,5 +1,3 @@
-import { parse } from "querystring";
-
 /**API
  * 
  */
@@ -11,20 +9,28 @@ const path = {
     testPath: '/'
 };
 
-
-//获取板块列表
-async function getForumList() {
-    let url = path.testPath + 'getForumList';
+/**
+ * 构造fetch获取内容
+ * @param {String} type API类型 
+ * @param {Object} header Header参数
+ */
+async function getContent(type='ref',props) {
+    let url = path.testPath + type;
+    if(!(props === undefined)) {
+        let params = new URLSearchParams(props);
+        url += '?' + params.toString();
+    }
+    console.log('url:'+url);
     let config = {
         cache: 'no-cache',
-        headers: {"user-agent": "HavefunClient/Dawn"},
+        headers: {"user-agent": "HavefunClient-Dawn"},
         method: 'GET',
         mode: 'no-cors'
     }
     try {
         let res = await fetch(url,config);
         if(res.ok) {
-            console.log('getForumList!');
+            console.log('getContent! '+url);
             let json = await res.json();
             return {ok: true,json: json};
         } else {
@@ -37,36 +43,14 @@ async function getForumList() {
     
 }
 
-/**
- * 构造fetch获取内容
- * @param {String} type API类型 
- * @param {Object} header Header参数
- */
-async function getContent(type='ref',header) {
-    let url = path.testPath + type;
-    let config = {
-        cache: 'no-cache',
-        headers: {
-            "user-agent": "HavefunClient-Dawn",
-            ...header
-        },
-        method: 'GET',
-        mode: 'no-cors'
-    }
-    try {
-        let res = await fetch(url,config);
-        if(res.ok) {
-            console.log('getContent!'+url);
-            let json = await res.json();
-            return {ok: true,json: json};
-        } else {
-            throw res;
-        }
-    } catch (error) {
-        console.log(error);
-        return {ok: false};
-    }
-    
+//获取板块列表
+function getForumList() {
+    return getContent('getForumList')
+}
+
+//获取时间线
+function getTimeLine() {
+    return getContent('timeline')
 }
 
 //获取串内容
@@ -79,11 +63,14 @@ function getThread(props = {id: 14500641,page: 1}) {
 function getRef(props = {id: 14500641}) {
     console.log('getRef!');
     return getContent('ref',props)
-    }
+}
+
 //获取板块内容
-function getForum(props = {id: -1,page: 1}) {
+function getForum(props = {id: 4,page: 1}) {
     console.log('getForum!');
-    return getContent('showf',props)
+    console.log(props);
+    let func = props.id === -1 ? getTimeLine() : getContent('showf',props);//判断是否是时间线
+    return func
 }
 
 /**URL解析
@@ -118,13 +105,13 @@ function getUrl() {
     }
     
     //解析search
-    let s = url.search.matchAll(/(\w+)=(\d+)/g);
+    let s = new URLSearchParams(url.search).entries();
     while (true) {
         let t = s.next();
         console.log(t);
         if(t.done) break;
-        e[t.value[1]] = t.value[2];
+        e[t.value[0]] = t.value[1];
     }
     return e;
 }
-export {getForumList,getForum,getThread,getRef,getUrl}
+export {getForumList,getTimeLine,getForum,getThread,getRef,getUrl}

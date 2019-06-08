@@ -8,7 +8,9 @@ function ForumGroup(props) {
     return (
     <li 
       key={list.id}
-      onClick={dispatch({type: 'changeForum',id: list.id})}
+      onClick={() => {
+        dispatch({type: 'changeForum',id: list.id});
+      }}
       //解析板块名称，时间线特殊解析
       dangerouslySetInnerHTML={{ __html: (list.showName === '' || list.name === '时间线') ? list.name : list.showName}}
     />)

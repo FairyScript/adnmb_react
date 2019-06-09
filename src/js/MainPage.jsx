@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useReducer,useMemo } from 'react';
+import React, { useState, useEffect, useReducer, useMemo } from 'react';
 import { getForumList, getUrl } from '../api/api'
 import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';
-import '../css/App.scss';
+import { PostView } from './PostView';
+import '../css/MainPage.scss';
 
 //context
 const DataDispatch = React.createContext(null);
@@ -26,13 +27,13 @@ function MainPage() {
     console.log(action);
     switch (action.type) {
       case 'changeForum': {
-        return {...state, mode: 'f', id: action.id };
+        return { ...state, mode: 'f', id: action.id };
       }
       case 'changeThread': {
-        return {...state, mode: 't', id: action.id };
+        return { ...state, mode: 't', id: action.id };
       }
       case 'changePage': {
-        return {...state, page: action.page };
+        return { ...state, page: action.page };
       }
       default: {
         console.error(action);
@@ -83,17 +84,23 @@ function MainPage() {
 
   useEffect(() => {
     console.log(forumInfo);
-  },[forumInfo]); 
+  }, [forumInfo]);
   return (
-    <DataDispatch.Provider value={dispatch}>
-      <LeftSideBar className="LeftSideBar" forumList={forumList} />
-      <ThreadView
-        className="ThreadView"
-        mode={forumInfo.mode}
-        id={forumInfo.id}
-        page={forumInfo.page}
-      />
-    </DataDispatch.Provider>
+    <div className="main-page">
+      <DataDispatch.Provider value={dispatch}>
+        {/**暂时没有办法获取到初始的active forum，切换高亮的逻辑应在子组件内实现 */}
+        <LeftSideBar
+          forumList={forumList}
+        />
+        <ThreadView
+          mode={forumInfo.mode}
+          id={forumInfo.id}
+          page={forumInfo.page}
+        />
+        <PostView />
+      </DataDispatch.Provider>
+    </div>
+
   )
 }
 

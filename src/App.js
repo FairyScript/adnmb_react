@@ -13,7 +13,7 @@ import {Test} from './js/test.js';
 
 function App() {
   return (
-    <MainPage className="MainPage"/>
+    <MainPage/>
   )
 } 
 

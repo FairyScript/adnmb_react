@@ -9,10 +9,10 @@ import {getForum,getThread} from '../api/api';
  */
 function ThreadView(props) {
   return (
-    <>
+    <div className="thread-view">
       <ThreadList mode={props.mode} id={props.id} page={props.page}/>
       <ThreadPage page={props.page}/>
-    </>
+    </div>
   );
 }
 
@@ -59,13 +59,13 @@ function ThreadContent(props) {
 //
 function ThreadInfo(props) {
   return (
-    <>
+    <div className="thread-info">
     <span className="h-threads-info-title">{props.content.title} </span>
     <span className="h-threads-info-name">{props.content.name} </span>
     <span className="h-threads-info-time">{props.content.now} </span>
     <span className="h-threads-info-userid">{props.content.userid} </span>
     <span className="h-threads-info-id">{props.content.id}</span>
-    </>
+    </div>
   )
 }
 

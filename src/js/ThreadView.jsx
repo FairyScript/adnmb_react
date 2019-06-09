@@ -1,6 +1,6 @@
 import React,{useState,useEffect} from 'react';
-import {getForum,getThread} from '../api/api';
-
+import {path,getForum,getThread} from '../api/api';
+import Zmage from 'react-zmage';
 /**
  * 
  * @param {String} props.mode 内容的类型，根据不同类型使用不同API
@@ -64,7 +64,7 @@ function ThreadInfo(props) {
     <span className="h-threads-info-name">{props.content.name} </span>
     <span className="h-threads-info-time">{props.content.now} </span>
     <span className="h-threads-info-userid">{props.content.userid} </span>
-    <span className="h-threads-info-id">{props.content.id}</span>
+    <span className="h-threads-info-id">No.{props.content.id}</span>
     </div>
   )
 }
@@ -73,10 +73,12 @@ function ThreadInfo(props) {
 function ThreadMain(props) {
   return (
     <>
-    {props.content.img === '' && 
-      //需要额外的图片控件
-      <img className="h-threads-image"></img>
-    }
+    {props.content.img !== '' && 
+    <Zmage 
+    src={`${path.cdnPath}thumb/${props.content.img}${props.content.ext}`}
+    alt={props.content.img} 
+    set={[{src: `${path.cdnPath}image/${props.content.img}${props.content.ext}`}]}
+    />}
     {/**dangerouslySetInnerHTML 并不安全！！！如有机会请自行解析HTML文本 */}
     <div dangerouslySetInnerHTML={{__html: props.content.content}} />
     </>
@@ -98,7 +100,9 @@ function ThreadReply(props) {
 //页数控件
 function ThreadPage(props) {
   return (
-    null
+    <div className="thread-page">
+
+    </div>
   )
 }
 

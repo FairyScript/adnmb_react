@@ -2,7 +2,7 @@ import React, { useState, useEffect, useReducer, useMemo } from 'react';
 import { getForumList, getUrl } from '../api/api'
 import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';
-import { PostView } from './PostView';
+import { RightSideBar } from './PostView';
 import '../css/MainPage.scss';
 
 //context
@@ -97,7 +97,7 @@ function MainPage() {
           id={forumInfo.id}
           page={forumInfo.page}
         />
-        <PostView />
+        <RightSideBar />
       </DataDispatch.Provider>
     </div>
 

@@ -5,7 +5,7 @@
 const path = {
     pathname: 'https://adnmb2.com/',
     apiPath: 'https://adnmb2.com/Api/',
-    cdnPath: 'https://nmbimg.fastmirror.org',
+    cdnPath: 'https://nmbimg.fastmirror.org/',
     testPath: '/'
 };
 
@@ -116,4 +116,4 @@ function getUrl() {
     }
     return e;
 }
-export {getForumList,getTimeLine,getForum,getThread,getRef,getUrl}
+export {path,getForumList,getTimeLine,getForum,getThread,getRef,getUrl}

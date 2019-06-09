@@ -41,7 +41,7 @@ function ThreadList(props) {
       }
     }
     fetchData();
-  },[])
+  },[props])
 
   return content;
 }

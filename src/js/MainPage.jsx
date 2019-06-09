@@ -26,23 +26,18 @@ function MainPage() {
     console.log(action);
     switch (action.type) {
       case 'changeForum': {
-        Object.assign(state, { mode: 'f', id: action.id });
-        break;
+        return {...state, mode: 'f', id: action.id };
       }
       case 'changeThread': {
-        Object.assign(state, { mode: 't', id: action.id });
-        break;
+        return {...state, mode: 't', id: action.id };
       }
       case 'changePage': {
-        Object.assign(state, { page: action.page });
-        break;
+        return {...state, page: action.page };
       }
       default: {
         console.error(action);
       }
     }
-    console.log(state);
-    return state;
   }
 
 

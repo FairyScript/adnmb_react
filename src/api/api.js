@@ -69,7 +69,7 @@ function getRef(props = {id: 14500641}) {
 function getForum(props = {id: 4,page: 1}) {
     console.log('getForum!');
     console.log(props);
-    let func = props.id === -1 ? getTimeLine() : getContent('showf',props);//判断是否是时间线
+    let func = props.id === '-1' ? getTimeLine() : getContent('showf',props);//判断是否是时间线
     return func
 }
 

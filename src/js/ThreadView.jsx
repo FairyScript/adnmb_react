@@ -1,17 +1,19 @@
-import React,{useState,useEffect} from 'react';
+import React,{useState,useEffect,useContext} from 'react';
 import {path,getForum,getThread} from '../api/api';
 import Zmage from 'react-zmage';
+import {DataStore} from './MainPage';
 /**
  * 
  * @param {String} props.mode 内容的类型，根据不同类型使用不同API
  * @param {Number} props.id 页面ID,串号和板块号
  * @param {Number} props.page 页数
  */
-function ThreadView(props) {
+function ThreadView() {
+  const forumInfo = useContext(DataStore).forumInfo;
   return (
     <div className="thread-view">
-      <ThreadList mode={props.mode} id={props.id} page={props.page}/>
-      <ThreadPage page={props.page}/>
+      <ThreadList mode={forumInfo.mode} id={forumInfo.id} page={forumInfo.page}/>
+      <ThreadPage page={forumInfo.page}/>
     </div>
   );
 }
@@ -49,10 +51,10 @@ function ThreadList(props) {
 //串内容组件
 function ThreadContent(props) {
       return (
-        <>
+        <div className="thread-content">
         <ThreadInfo content={props.content}/>
         <ThreadMain content={props.content}/>
-        </>
+        </div>
       )
 }
 

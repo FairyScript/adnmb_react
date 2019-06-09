@@ -1,11 +1,11 @@
 import React, { useState, useContext } from 'react';
-import { DataDispatch } from './MainPage';
+import { DataStore } from './MainPage';
 import '../css/LeftSideBar.scss';
 
 //板块组
 function ForumGroup(props) {
   //use Context
-  const dispatch = useContext(DataDispatch);
+  const dispatch = useContext(DataStore).dispatch;
 
   let c = props.content.forums.map(list => {
     return (

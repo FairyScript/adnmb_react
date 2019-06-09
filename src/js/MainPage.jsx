@@ -2,11 +2,11 @@ import React, { useState, useEffect, useReducer, useMemo } from 'react';
 import { getForumList, getUrl } from '../api/api'
 import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';
-import { RightSideBar } from './PostView';
+import { RightSideBar } from './RightSideBar';
 import '../css/MainPage.scss';
 
 //context
-const DataDispatch = React.createContext(null);
+const DataStore = React.createContext(null);
 
 //A岛主视图
 function MainPage() {
@@ -22,7 +22,7 @@ function MainPage() {
   //Hook
   const [forumList, setForumList] = useState();
   const [forumInfo, dispatch] = useReducer(reducer, defaultData);
-
+  
   function reducer(state, action) {
     console.log(action);
     switch (action.type) {
@@ -78,30 +78,20 @@ function MainPage() {
        * 需要API支持
        */
     }
-
     fetchData();
   }, []);
 
-  useEffect(() => {
-    console.log(forumInfo);
-  }, [forumInfo]);
   return (
     <div className="main-page">
-      <DataDispatch.Provider value={dispatch}>
+      <DataStore.Provider value={{forumInfo,dispatch}}>
         {/**暂时没有办法获取到初始的active forum，切换高亮的逻辑应在子组件内实现 */}
-        <LeftSideBar
-          forumList={forumList}
-        />
-        <ThreadView
-          mode={forumInfo.mode}
-          id={forumInfo.id}
-          page={forumInfo.page}
-        />
+        <LeftSideBar forumList={forumList} />
+        <ThreadView />
         <RightSideBar />
-      </DataDispatch.Provider>
+      </DataStore.Provider>
     </div>
 
   )
 }
 
-export { MainPage, DataDispatch };
+export { MainPage, DataStore };

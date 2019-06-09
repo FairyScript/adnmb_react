@@ -68,7 +68,7 @@ function MainPage() {
         dispatch({ type: 'changeThread', id: url.id });
       }
 
-      if (url.page) {
+      if (url.page && url.page != 1) {
         console.log('changePage');
         dispatch({ type: 'changePage', page: url.page });
       }

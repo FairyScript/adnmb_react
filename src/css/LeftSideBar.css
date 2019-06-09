@@ -1,0 +1,7 @@
+.left-side-bar {
+  max-width: 250px; }
+
+.active-forum {
+  background-color: darkorange;
+  font-weight: bolder;
+  color: white; }

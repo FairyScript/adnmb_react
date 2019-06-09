@@ -1,0 +1,25 @@
+@charset "UTF-8";
+.thread-content {
+  background-color: #ceee9e;
+  margin-bottom: 25px; }
+
+.thread-main {
+  padding: 20px 0 10px 0; }
+
+.thread-replys {
+  background-color: aquamarine;
+  border-top: 2px solid red; }
+  .thread-replys .thread-reply-item {
+    margin-top: 10px;
+    border-bottom: 1px solid #ccc; }
+  .thread-replys :last-child {
+    border-bottom: none; }
+
+.admin-name {
+  color: red;
+  font-weight: bold; }
+  .admin-name::after {
+    content: '小会员';
+    color: black;
+    font-size: 50%;
+    font-weight: normal; }

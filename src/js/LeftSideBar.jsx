@@ -11,7 +11,7 @@ function ForumGroup(props) {
     return (
       <li
         key={list.id}
-        className={list.id === props.active ? "ActiveForum" : "ForumName"}
+        className={list.id === props.active ? "active-forum forum-item" : "forum-item"}
         onClick={() => {
           dispatch({ type: 'changeForum', id: list.id });
           props.setActive(list.id);

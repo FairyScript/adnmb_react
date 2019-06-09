@@ -1,0 +1,26 @@
+.thread-content {
+    background-color: rgb(206, 238, 158);
+    margin-bottom: 25px;
+}
+.thread-main {
+    padding: 20px 0 10px 0;
+}
+.thread-replys {
+    background-color: aquamarine;
+    border-top: 2px solid red;
+    .thread-reply-item {
+        margin-top: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+    :last-child {border-bottom: none;}
+}
+.admin-name {
+    color: red;
+    font-weight: bold;
+    &::after {
+        content: '小会员';
+        color: black;
+        font-size: 50%;
+        font-weight: normal;
+    }
+}

@@ -27,7 +27,7 @@ function ThreadList(props) {
         let res = await getForum({id: props.id,page: props.page});
         if(res.ok) {
           console.log(res.json);
-          const list = res.json.map(content => <ThreadContent content={content}/>)
+          const list = res.json.map(content => <ThreadContent key={content.id} content={content}/>)
           setContent(list);
         }
       }
@@ -41,7 +41,7 @@ function ThreadList(props) {
       }
     }
     fetchData();
-  },[props.id,props.page])
+  },[])
 
   return content;
 }
@@ -50,8 +50,8 @@ function ThreadList(props) {
 function ThreadContent(props) {
       return (
         <>
-        <ThreadInfo detail={props.content}/>
-        <ThreadMain detail={props.content}/>
+        <ThreadInfo content={props.content}/>
+        <ThreadMain content={props.content}/>
         </>
       )
 }
@@ -60,11 +60,11 @@ function ThreadContent(props) {
 function ThreadInfo(props) {
   return (
     <>
-    <span className="h-threads-info-title">{props.detail.title} </span>
-    <span className="h-threads-info-name">{props.detail.name} </span>
-    <span className="h-threads-info-time">{props.detail.now} </span>
-    <span className="h-threads-info-userid">{props.detail.userid} </span>
-    <span className="h-threads-info-id">{props.detail.id}</span>
+    <span className="h-threads-info-title">{props.content.title} </span>
+    <span className="h-threads-info-name">{props.content.name} </span>
+    <span className="h-threads-info-time">{props.content.now} </span>
+    <span className="h-threads-info-userid">{props.content.userid} </span>
+    <span className="h-threads-info-id">{props.content.id}</span>
     </>
   )
 }
@@ -73,23 +73,23 @@ function ThreadInfo(props) {
 function ThreadMain(props) {
   return (
     <>
-    {props.detail.img === '' && 
+    {props.content.img === '' && 
       //需要额外的图片控件
       <img className="h-threads-image"></img>
     }
     {/**dangerouslySetInnerHTML 并不安全！！！如有机会请自行解析HTML文本 */}
-    <div dangerouslySetInnerHTML={{__html: props.detail.content}} />
+    <div dangerouslySetInnerHTML={{__html: props.content.content}} />
     </>
   )
 }
 
 //回应控件
 function ThreadReply(props) {
-  return props.content.map(detail => {
+  return props.content.map(content => {
     return (
       <>
-      <ThreadInfo detail={detail}/>
-      <ThreadMain detail={detail}/>
+      <ThreadInfo content={content}/>
+      <ThreadMain content={content}/>
       </>
     ) 
   })

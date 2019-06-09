@@ -77,7 +77,7 @@ function getForum(props = {id: 4,page: 1}) {
  * 形如：https://adnmb2.com/t/18097095?r=18107967&page=2
  * URL可能含有的参数
  * @returns {String} viewmode 访问模式 f,t,admin(这个暂时不好用)
- * @returns {String} tid: 串号
+ * @returns {String} id: 串号
  * @returns {String} r: 回应串号
  * @returns {Number} page: 页数
  */
@@ -89,7 +89,7 @@ function getUrl() {
     if(url.pathname === '/') {
         e = {
             viewmode: 'f',
-            tid: '时间线',
+            id: '时间线',
             page: 1
         }
         return e;
@@ -98,7 +98,7 @@ function getUrl() {
     try {
         let parser = /\/(.+)\/(.*)/.exec(url.pathname);
         e.viewmode = parser[1];
-        e.tid = decodeURI(parser[2]);
+        e.id = decodeURI(parser[2]);
     } catch (error) {
         alert('串号解析失败！');
         console.log(error);

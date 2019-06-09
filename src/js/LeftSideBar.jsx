@@ -24,7 +24,7 @@ function ForumGroup(props) {
 
 //板块组列表
 function ForumList(props) {
-  console.log(props);
+  //console.log(props);
   if(props.list === undefined) {
     return <ul>Loading...</ul>
   }

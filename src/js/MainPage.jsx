@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer,useMemo } from 'react';
 import { getForumList, getUrl } from '../api/api'
 import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';
@@ -23,17 +23,18 @@ function MainPage() {
   const [forumInfo, dispatch] = useReducer(reducer, defaultData);
 
   function reducer(state, action) {
+    console.log(action);
     switch (action.type) {
       case 'changeForum': {
-        Object.assign(state, { mode: 'f', id: action.content });
+        Object.assign(state, { mode: 'f', id: action.id });
         break;
       }
       case 'changeThread': {
-          Object.assign(state, { mode: 't', id: action.content });
-          break;
+        Object.assign(state, { mode: 't', id: action.id });
+        break;
       }
       case 'changePage': {
-        Object.assign(state, { page: action.content });
+        Object.assign(state, { page: action.page });
         break;
       }
       default: {
@@ -41,6 +42,7 @@ function MainPage() {
       }
     }
     console.log(state);
+    return state;
   }
 
 
@@ -60,20 +62,20 @@ function MainPage() {
       if (url.viewmode === 'f') {
         res.json.forEach(gruop => {
           gruop.forums.forEach(item => {
-            if (item.name === url.tid) {
+            if (item.name === url.id) {
               console.log('changeForum');
-              dispatch({ type: 'changeForum', content: item.id })
+              dispatch({ type: 'changeForum', id: item.id })
             };
           })
         })
       } else {
         console.log('changeThread');
-        dispatch({ type: 'changeThread', content: url.tid });
+        dispatch({ type: 'changeThread', id: url.id });
       }
 
       if (url.page) {
         console.log('changePage');
-        dispatch({ type: 'changePage', content: url.page });
+        dispatch({ type: 'changePage', page: url.page });
       }
 
       /**对于传入URL，无法正确解析所对应的板块
@@ -84,6 +86,9 @@ function MainPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    console.log(forumInfo);
+  },[forumInfo]); 
   return (
     <DataDispatch.Provider value={dispatch}>
       <LeftSideBar className="LeftSideBar" forumList={forumList} />

@@ -15,11 +15,16 @@
   .thread-replys :last-child {
     border-bottom: none; }
 
-.admin-name {
+.thread-info > span {
+  margin: 0 3px 0 3px; }
+
+.thread-info .admin-name {
   color: red;
   font-weight: bold; }
-  .admin-name::after {
+  .thread-info .admin-name::after {
     content: '小会员';
     color: black;
     font-size: 50%;
-    font-weight: normal; }
+    font-weight: normal;
+    position: relative;
+    left: -.3em; }

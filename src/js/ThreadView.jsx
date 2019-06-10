@@ -36,7 +36,7 @@ function ThreadList(props) {
       }
 
       if (props.mode === 't') {
-        let res = await getThread(props.id, props.page);
+        let res = await getThread({ id: props.id, pages: props.page });
         if (res.ok) {
           setContent(<ThreadContent content={res.json} />)
         }
@@ -87,13 +87,14 @@ function ThreadItem(props) {
 }
 //
 function ThreadInfo(props) {
+  const dispatch = useContext(DataStore).dispatch;
   return (
     <div className="thread-info">
       <span className="h-threads-info-title">{props.content.title} </span>
       <span className="h-threads-info-name">{props.content.name} </span>
       <span className="h-threads-info-time">{props.content.now} </span>
-      <span className={`h-threads-info-name${props.content.admin === '1' ? ' admin-name' : ''}`}>{props.content.userid} </span>
-      <span className="h-threads-info-id">No.{props.content.id}</span>
+      <span className={`h-threads-info-name${props.content.admin === '1' ? ' admin-name' : ''}`}>{props.content.userid}</span>
+      <span className="h-threads-info-id" onClick={}>No.{props.content.id}</span>
     </div>
   )
 }

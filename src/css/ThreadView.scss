@@ -14,13 +14,22 @@
     }
     :last-child {border-bottom: none;}
 }
-.admin-name {
-    color: red;
-    font-weight: bold;
-    &::after {
-        content: '小会员';
-        color: black;
-        font-size: 50%;
-        font-weight: normal;
+.thread-info {
+    >span {
+        margin: 0 3px 0 3px;
+    }
+    //红名
+    .admin-name {
+        color: red;
+        font-weight: bold;
+        &::after {
+            content: '小会员';
+            color: black;
+            font-size: 50%;
+            font-weight: normal;
+            position: relative;
+            left: -.3em;
+        }
     }
 }
+

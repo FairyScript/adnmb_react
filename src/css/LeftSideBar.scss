@@ -1,12 +1,17 @@
 .left-side-bar {
+    float: left;
+    top: 5vh;
+    position: sticky;
+    width: 20%;
     max-width: 250px;
-    overflow: hidden;
-}
-.forum-list {
-    height: 100%;
+    height: 95vh;
     overflow-x: hidden;
-    overflow-y: auto;
-    }
+    overflow-y: scroll;
+}
+
+.forum-list {
+
+}
 .active-forum {
     background-color: darkorange;
     font-weight: bolder;

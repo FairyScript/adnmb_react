@@ -5,7 +5,10 @@ import { ThreadView } from './ThreadView';
 import { RightSideBar } from './RightSideBar';
 import '../css/MainPage.scss';
 
-//context
+/**
+ * @member {Object} forumInfo 串信息
+ * @member {function} dispatch 操作函数
+ */
 const DataStore = React.createContext(null);
 
 //A岛主视图
@@ -87,7 +90,7 @@ function MainPage() {
         {/**暂时没有办法获取到初始的active forum，切换高亮的逻辑应在子组件内实现 */}
         <LeftSideBar forumList={forumList} />
         <ThreadView />
-        <RightSideBar />
+        <RightSideBar forumList={forumList}/>
       </DataStore.Provider>
     </div>
 

@@ -17,7 +17,7 @@ function ForumGroup(props) {
         key={list.id}
         className={list.id === props.active ? "active-forum forum-item" : "forum-item"}
         onClick={() => {
-          dispatch({ type: 'changeForum', id: list.id });
+          dispatch({ type: 'changeForum', id: list.id , page: 1});
           props.setActive(list.id);
         }}
         //解析板块名称，时间线特殊解析

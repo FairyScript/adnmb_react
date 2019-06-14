@@ -1,4 +1,10 @@
 @charset "UTF-8";
+.thread-view {
+  padding-left: 2rem;
+  width: 50%;
+  display: flex;
+  flex-direction: column; }
+
 .thread-content {
   background-color: #ceee9e;
   margin-bottom: 25px; }

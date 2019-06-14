@@ -14,8 +14,8 @@ function ThreadView() {
   const forumInfo = useContext(DataStore).forumInfo;
   return (
     <div className="thread-view">
-      <ThreadList mode={forumInfo.mode} id={forumInfo.id} page={forumInfo.page} />
       <ThreadPage mode={forumInfo.mode} page={forumInfo.page} />
+      <ThreadList mode={forumInfo.mode} id={forumInfo.id} page={forumInfo.page} />
     </div>
   );
 }
@@ -30,7 +30,7 @@ function ThreadList(props) {
       if (props.mode === 'f') {
         let res = await getForum({ id: props.id, page: props.page });
         if (res.ok) {
-          console.log(res.json);
+          //console.log(res.json);
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
           setContent(list);
         }
@@ -94,8 +94,8 @@ function ThreadInfo(props) {
       <span className="h-threads-info-title">{props.content.title} </span>
       <span className="h-threads-info-name">{props.content.name} </span>
       <span className="h-threads-info-time">{props.content.now} </span>
-      <span className={`h-threads-info-name${props.content.admin === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
-      {'fid' in props.content && 
+      <span className={`h-threads-info-name${Number(props.content.admin) === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
+      {'fid' in props.content &&
         <span className="h-threads-info-fid">
           [{forumList[props.content.fid]}]
         </span>
@@ -123,14 +123,21 @@ function ThreadMain(props) {
 
 //页数控件
 function ThreadPage(props) {
-  switch(props.mode) {
-    case 'f': {
-      
-    }
+  //页数按钮组件
+  function PageItem(props) {
+    return (
+      <button className="thread-page-button" onClick={props.click}>
+        {props.content}
+      </button>
+    )
   }
+
+  const dispatch = useContext(DataStore).dispatch;
+
   return (
     <div className="thread-page">
-
+      {props.page > 1 && <PageItem content="上一页" click={() => dispatch({ type: 'changePage', page: props.page - 1 })} />}
+      <PageItem content="下一页" click={() => dispatch({ type: 'changePage', page: props.page + 1 })} />
     </div>
   )
 }

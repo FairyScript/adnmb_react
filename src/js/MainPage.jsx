@@ -27,10 +27,10 @@ function MainPage() {
     console.log(action);
     switch (action.type) {
       case 'changeForum': {
-        return { ...state, mode: 'f', id: action.id };
+        return { ...state, mode: 'f', id: Number(action.id) };//id强制类型转换为Number
       }
       case 'changeThread': {
-        return { ...state, mode: 't', id: action.id };
+        return { ...state, mode: 't', id: Number(action.id) };
       }
       case 'changePage': {
         return { ...state, page: action.page };

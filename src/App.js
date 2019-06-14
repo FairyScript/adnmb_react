@@ -9,7 +9,7 @@
 
 import React from 'react';
 import {MainPage} from './js/MainPage';
-import {Test} from './js/test.js';
+import {Test} from './test';
 
 function App() {
   return (

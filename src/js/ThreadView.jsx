@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { path, getForum, getThread } from '../api/api';
 import Zmage from 'react-zmage';
 import { DataStore } from './MainPage';
+import { forumList } from './LeftSideBar';
 import '../css/ThreadView.scss';
 /**
  * 
@@ -14,7 +15,7 @@ function ThreadView() {
   return (
     <div className="thread-view">
       <ThreadList mode={forumInfo.mode} id={forumInfo.id} page={forumInfo.page} />
-      <ThreadPage page={forumInfo.page} />
+      <ThreadPage mode={forumInfo.mode} page={forumInfo.page} />
     </div>
   );
 }
@@ -93,8 +94,13 @@ function ThreadInfo(props) {
       <span className="h-threads-info-title">{props.content.title} </span>
       <span className="h-threads-info-name">{props.content.name} </span>
       <span className="h-threads-info-time">{props.content.now} </span>
-      <span className={`h-threads-info-name${props.content.admin === '1' ? ' admin-name' : ''}`}>{props.content.userid}</span>
-      <span className="h-threads-info-id" onClick={}>No.{props.content.id}</span>
+      <span className={`h-threads-info-name${props.content.admin === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
+      {'fid' in props.content && 
+        <span className="h-threads-info-fid">
+          [{forumList[props.content.fid]}]
+        </span>
+      }
+      <span className="h-threads-info-id">No.{props.content.id}</span>
     </div>
   )
 }
@@ -117,6 +123,11 @@ function ThreadMain(props) {
 
 //页数控件
 function ThreadPage(props) {
+  switch(props.mode) {
+    case 'f': {
+      
+    }
+  }
   return (
     <div className="thread-page">
 

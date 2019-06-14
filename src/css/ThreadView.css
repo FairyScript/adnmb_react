@@ -26,5 +26,8 @@
     color: black;
     font-size: 50%;
     font-weight: normal;
-    position: relative;
-    left: -.3em; }
+    position: relative; }
+
+.thread-info .h-threads-info-fid {
+  color: gray;
+  font-size: 80%; }

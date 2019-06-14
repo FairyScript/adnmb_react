@@ -13,6 +13,9 @@ const path = {
  * 构造fetch获取内容
  * @param {String} type API类型 
  * @param {Object} header Header参数
+ * 
+ * @returns {Boolean} ok 请求是否成功
+ * @returns {Object} json 返回体，json格式
  */
 async function getContent(type='ref',props) {
     let url = path.testPath + type;
@@ -68,7 +71,7 @@ function getRef(props = {id: 14500641}) {
 //获取板块内容
 function getForum(props = {id: 4,page: 1}) {
     console.log('getForum!');
-    if(props.id === '-1') {
+    if(props.id === -1) {
         return getTimeLine();
     } else {
         return getContent('showf',props);
@@ -76,7 +79,7 @@ function getForum(props = {id: 4,page: 1}) {
 }
 
 /**URL解析
- * 形如：https://adnmb2.com/t/18097095?r=18107967&page=2
+ * 形如：/t/18097095?r=18107967&page=2
  * URL可能含有的参数
  * @returns {String} viewmode 访问模式 f,t,admin(这个暂时不好用)
  * @returns {String} id: 串号

@@ -1,6 +1,11 @@
 .left-side-bar {
   max-width: 250px; }
 
+.forum-list {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; }
+
 .active-forum {
   background-color: darkorange;
   font-weight: bolder;

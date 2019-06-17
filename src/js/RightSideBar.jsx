@@ -1,7 +1,9 @@
 import React from 'react';
 import { PostView } from './PostView';
-import { DebugTool } from './DebugTool';
 
+function DebugTool(props) {
+  return null;
+}
 function RightSideBar(props) {
   return (
     <div className="RightSideBar" >

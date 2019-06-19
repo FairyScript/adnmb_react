@@ -6,6 +6,7 @@ const path = {
     pathname: 'https://adnmb2.com/',
     apiPath: 'https://adnmb2.com/Api/',
     cdnPath: 'https://nmbimg.fastmirror.org/',
+    postPath: 'https://adnmb2.com/Home/Forum/doReplyThread.html',
     testPath: '/'
 };
 
@@ -46,14 +47,47 @@ async function getContent(type='ref',props) {
     
 }
 
+//发串
+//发串是否成功的逻辑应在这里实现
+async function postThread(formData) {
+    let url = path.postPath;
+    let config = {
+        cache: 'no-cache',
+        headers: {"user-agent": "HavefunClient-Dawn"},
+        method: 'POST',
+        body: formData,
+        mode: 'no-cors'
+    }
+    try {
+        let res = await fetch(url,config);
+        if(res.ok) {
+            let text = await res.text();
+            //检测返回是否成功
+            let result = /<p class="(.+)">(.+)<\/p>/.exec(text);
+            switch (result[1]) {
+                case 'success': {
+                    return {ok: true,message: result[2]};
+                }
+                case 'error': {
+                    throw result[2];
+                }
+            }
+        } else {
+            throw 'post失败!';
+        }
+    } catch (error) {
+        console.log(error);
+        return {ok: false,message: error};
+    }
+}
 //获取板块列表
 function getForumList() {
     return getContent('getForumList')
 }
 
 //获取时间线
-function getTimeLine() {
-    return getContent('timeline')
+function getTimeLine(props={page: 1}) {
+    return getContent('timeline',props)
 }
 
 //获取串内容

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { path, getForum, getThread } from '../api/api';
 import Zmage from 'react-zmage';
+import ReactHtmlParser from 'react-html-parser';
 import { DataStore } from './MainPage';
 import { forumList } from './LeftSideBar';
 import '../css/ThreadView.scss';
@@ -107,6 +108,19 @@ function ThreadInfo(props) {
 
 //正文内容
 function ThreadMain(props) {
+  //捕获引用串号
+  const transform = node => {
+    if(/>>No\.\d+/.test(node.data)){
+      let rnumber = node.data.match(/>>No\.\d+/)[0];
+      let data = node.data.replace(rnumber,'');
+      return (
+        <>
+        <span className="reply-number">{rnumber}</span>
+        {data !== '' && <span>{data}</span>}
+        </>
+      )
+  }
+  }
   return (
     <div className="thread-main">
       {props.content.img !== '' &&
@@ -115,8 +129,7 @@ function ThreadMain(props) {
           alt={props.content.img}
           set={[{ src: `${path.cdnPath}image/${props.content.img}${props.content.ext}` }]}
         />}
-      {/**dangerouslySetInnerHTML 并不安全！！！如有机会请自行解析HTML文本 */}
-      <div dangerouslySetInnerHTML={{ __html: props.content.content }} />
+      {ReactHtmlParser(props.content.content,transform)}
     </div>
   )
 }

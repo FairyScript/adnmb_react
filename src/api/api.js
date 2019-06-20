@@ -29,7 +29,7 @@ async function getContent(type='ref',props) {
         cache: 'no-cache',
         headers: {"user-agent": "HavefunClient-Dawn"},
         method: 'GET',
-        mode: 'no-cors'
+        mode: 'cors'
     }
     try {
         let res = await fetch(url,config);
@@ -56,7 +56,8 @@ async function postThread(formData) {
         headers: {"user-agent": "HavefunClient-Dawn"},
         method: 'POST',
         body: formData,
-        mode: 'no-cors'
+        mode: 'cors',
+        credentials: "include"
     }
     try {
         let res = await fetch(url,config);
@@ -64,6 +65,7 @@ async function postThread(formData) {
             let text = await res.text();
             //检测返回是否成功
             let result = /<p class="(.+)">(.+)<\/p>/.exec(text);
+            console.log(result);
             switch (result[1]) {
                 case 'success': {
                     return {ok: true,message: result[2]};
@@ -76,7 +78,7 @@ async function postThread(formData) {
             throw 'post失败!';
         }
     } catch (error) {
-        console.log(error);
+        //console.log(error);
         return {ok: false,message: error};
     }
 }
@@ -106,7 +108,7 @@ function getRef(props = {id: 14500641}) {
 function getForum(props = {id: 4,page: 1}) {
     console.log('getForum!');
     if(props.id === -1) {
-        return getTimeLine();
+        return getTimeLine({page: props.page});
     } else {
         return getContent('showf',props);
     }
@@ -153,4 +155,4 @@ function getUrl() {
     }
     return e;
 }
-export {path,getForumList,getTimeLine,getForum,getThread,getRef,getUrl}
+export {path,getForumList,getTimeLine,getForum,getThread,getRef,getUrl,postThread}

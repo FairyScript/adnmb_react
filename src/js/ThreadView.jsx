@@ -3,16 +3,13 @@ import { path, getForum, getThread } from '../api/api';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
 import { DataStore } from './MainPage';
-import { forumList } from './LeftSideBar';
 import '../css/ThreadView.scss';
-/**
- * 
- * @param {String} props.mode 内容的类型，根据不同类型使用不同API
- * @param {Number} props.id 页面ID,串号和板块号
- * @param {Number} props.page 页数
- */
-function ThreadView() {
+
+var forumList = {};
+
+function ThreadView(props) {
   const forumInfo = useContext(DataStore).forumInfo;
+  forumList = props.forumList;
   return (
     <div className="thread-view">
       <ThreadPage mode={forumInfo.mode} page={forumInfo.page} />
@@ -98,7 +95,7 @@ function ThreadInfo(props) {
       <span className={`h-threads-info-name${Number(props.content.admin) === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
       {'fid' in props.content &&
         <span className="h-threads-info-fid">
-          [{forumList[props.content.fid]}]
+          [{forumList[props.content.fid].name}]
         </span>
       }
       <span className="h-threads-info-id">No.{props.content.id}</span>

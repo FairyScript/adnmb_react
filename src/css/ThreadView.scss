@@ -1,6 +1,7 @@
 .thread-view {
     padding-left: 2rem;
-    width: 50%;
+    width: 50vw;
+    position: relative;
     display: flex;
     flex-direction: column;
 }
@@ -43,3 +44,7 @@
     }
 }
 
+.reply-number {
+    color: darkolivegreen;
+    font-weight: bold;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { path, getForum, getThread } from '../api/api';
 import Zmage from 'react-zmage';
-import ReactHtmlParser from 'react-html-parser';
+import ReactHtmlParser,{ convertNodeToElement } from 'react-html-parser';
 import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
 
@@ -98,7 +98,12 @@ function ThreadInfo(props) {
           [{forumList[props.content.fid].name}]
         </span>
       }
-      <span className="h-threads-info-id">No.{props.content.id}</span>
+      <span
+        className="h-threads-info-id"
+        onClick={() => {dispatch({type: 'changeThread',id: props.content.id})}}
+      >
+          No.{props.content.id}
+      </span>
     </div>
   )
 }
@@ -106,28 +111,36 @@ function ThreadInfo(props) {
 //正文内容
 function ThreadMain(props) {
   //捕获引用串号
-  const transform = node => {
+  /**
+   * TODO:
+   * 已知问题:
+   * 当回应与正文之间没有分隔符时,无法正常解析
+   * 有机会再修,初步想法是在他们之间插入一个空格丢回去重新parse
+   */
+  const transform = (node,index) => {
     if(/>>No\.\d+/.test(node.data)){
-      let rnumber = node.data.match(/>>No\.\d+/)[0];
-      let data = node.data.replace(rnumber,'');
+      let rid = node.data.match(/>>No\.(\d+)/);
       return (
-        <>
-        <span className="reply-number">{rnumber}</span>
-        {data !== '' && <span>{data}</span>}
-        </>
+        <span
+          className="reply-number"
+          key={index}
+          onDoubleClick={() => {console.log(rid[1])}}
+        >
+          {rid[0]}
+        </span>
       )
-  }
+    }
   }
   return (
-    <div className="thread-main">
+    <>
       {props.content.img !== '' &&
         <Zmage
           src={`${path.cdnPath}thumb/${props.content.img}${props.content.ext}`}
           alt={props.content.img}
           set={[{ src: `${path.cdnPath}image/${props.content.img}${props.content.ext}` }]}
         />}
-      {ReactHtmlParser(props.content.content,transform)}
-    </div>
+      {ReactHtmlParser(props.content.content,{transform})}
+    </>
   )
 }
 

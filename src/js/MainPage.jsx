@@ -25,7 +25,7 @@ function MainPage() {
   const [forumInfo, dispatch] = useReducer(reducer, defaultData);
 
   function reducer(state, action) {
-    console.log(action);
+    //console.log(action);
     let page = 1;
     if (action.page) {
       page = action.page;
@@ -104,8 +104,12 @@ function MainPage() {
       <DataStore.Provider value={{ forumInfo, dispatch }}>
         {/**暂时没有办法获取到初始的active forum，切换高亮的逻辑应在子组件内实现 */}
         <LeftSideBar forumList={forumList} />
-        {forumInfo.id !== 0 && (<><ThreadView forumList={forumList} />
-          <PostView message={forumList[forumInfo.id].msg} /></>)}
+        {forumInfo.id !== 0 && (
+        <>
+        <ThreadView forumList={forumList} />
+        <PostView forumList={forumList} />
+        </>
+        )}
       </DataStore.Provider>
     </div>
 

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { formik, Formik } from 'formik';
 import { DataStore } from './MainPage';
 import { postThread } from '../api/api';
-
+import '../css/PostView.scss'
 function DebugTool(props) {
   return null;
 }
@@ -73,16 +73,16 @@ function PostView(props) {
     </Formik>);
 
   return (
-    <>
-    <div className="postform">
-      <textarea className="postform-content" />
-      <ToolBar />
+    <div className="post-view">
+      <div className="postform">
+        {postForm}
+        <ToolBar />
+      </div>
+      {/* <div
+          className="forum-message"
+          dangerouslySetInnerHTML={{ __html:  }}
+        /> */}
     </div>
-    <div
-        className="forum-message"
-        dangerouslySetInnerHTML={{ __html: props.message }}
-      />
-    </>
   )
 }
 

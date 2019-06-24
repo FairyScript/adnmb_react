@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { DataStore } from './MainPage';
 import '../css/LeftSideBar.scss';
 
@@ -17,7 +17,7 @@ function ForumList(props) {
   const dispatch = useContext(DataStore).dispatch;
   const forumInfo = useContext(DataStore).forumInfo;
 
-  const [active,setActive] = useState(forumInfo.id);
+  const [active, setActive] = useState(forumInfo.id);
 
   const list = props.list;
   //空的就返回loading
@@ -26,7 +26,7 @@ function ForumList(props) {
   }
 
   let c = [];
-  for(let key in list) {
+  for (let key in list) {
     let sort = list[key].sort;
     c[sort] = (
       <li

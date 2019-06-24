@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer, useMemo } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { getForumList, getUrl } from '../api/api'
 import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';
@@ -85,6 +85,9 @@ function MainPage() {
         case 't': {
           tempInfo = { type: 'changeThread', id: url.id };
           break
+        }
+        default: {
+          console.log(`暂不支持的viewmode:${url.viewmode}`);
         }
       }
 

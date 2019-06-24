@@ -2,13 +2,22 @@
  * 
  */
 
+import {htmlparser2} from 'react-html-parser';
+
 const path = {
     pathname: 'https://adnmb2.com/',
-    apiPath: 'https://adnmb2.com/Api/',
+    apiPath: '/Api/',
+    managePath: '/Home/Forum/',
     cdnPath: 'https://nmbimg.fastmirror.org/',
     postPath: 'https://adnmb2.com/Home/Forum/doReplyThread.html',
     testPath: '/'
 };
+const config = {
+    cache: 'no-cache',
+    headers: {"user-agent": "HavefunClient-Dawn"},
+    method: 'GET',
+    mode: 'cors'
+}
 
 /**
  * 构造fetch获取内容
@@ -19,18 +28,12 @@ const path = {
  * @returns {Object} json 返回体，json格式
  */
 async function getContent(type='ref',props) {
-    let url = path.testPath + type;
+    let url = path.apiPath + type;
     if(!(props === undefined)) {
         let params = new URLSearchParams(props);
         url += '?' + params.toString();
     }
     console.log('url:'+url);
-    let config = {
-        cache: 'no-cache',
-        headers: {"user-agent": "HavefunClient-Dawn"},
-        method: 'GET',
-        mode: 'cors'
-    }
     try {
         let res = await fetch(url,config);
         if(res.ok) {
@@ -38,11 +41,11 @@ async function getContent(type='ref',props) {
             let json = await res.json();
             return {ok: true,json: json};
         } else {
-            throw res;
+            throw new Error(res);
         }
-    } catch (error) {
-        console.log(error);
-        return {ok: false};
+    } catch (res) {
+        console.log(res);
+        return {ok: false,status: res.status};
     }
     
 }
@@ -71,11 +74,12 @@ async function postThread(formData) {
                     return {ok: true,message: result[2]};
                 }
                 case 'error': {
-                    throw result[2];
+                    throw new Error(result[2]);
                 }
+                default: throw new Error(`未确定的result:${result}`);
             }
         } else {
-            throw 'post失败!';
+            throw new Error('post失败!');
         }
     } catch (error) {
         //console.log(error);
@@ -98,12 +102,6 @@ function getThread(props = {id: 14500641,page: 1}) {
     return getContent('thread',props);
 }
 
-//获取*单个*串内容
-function getRef(props = {id: 14500641}) {
-    console.log('getRef!');
-    return getContent('ref',props)
-}
-
 //获取板块内容
 function getForum(props = {id: 4,page: 1}) {
     console.log('getForum!');
@@ -111,6 +109,40 @@ function getForum(props = {id: 4,page: 1}) {
         return getTimeLine({page: props.page});
     } else {
         return getContent('showf',props);
+    }
+}
+
+//获取*单个*串内容
+function getRef(props = {id: 14500641}) {
+    console.log('getRef!');
+    return getContent('ref',props);
+}
+
+//获取父串
+async function getParent(props = {id: 14500641}) {
+    const url = `${path.managePath}ref?id=${props.id}`;
+    console.log(url);
+    try {
+        const res = await fetch(url,config);
+        if(res.ok) {
+            const text = await res.text();
+            let parent;
+            const parser = new htmlparser2.Parser({
+                onopentag: function(name, attribs){
+                    if(name === "a" && attribs.class === "h-threads-info-id"){
+                        parent = attribs.href.match(/\/t\/(\d+)\?/)[1];
+                    }
+                }
+            }, {decodeEntities: true});
+            parser.write(text);
+            parser.end();
+            return {ok: true, id: parent};
+        } else {
+            throw new Error(res);
+        }
+    } catch (res) {
+        console.log(res);
+        return{ok: false, status: res.status};
     }
 }
 
@@ -155,4 +187,4 @@ function getUrl() {
     }
     return e;
 }
-export {path,getForumList,getTimeLine,getForum,getThread,getRef,getUrl,postThread}
+export {path,getForumList,getTimeLine,getForum,getThread,getRef,getParent,getUrl,postThread}

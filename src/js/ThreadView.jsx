@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { path, getForum, getThread } from '../api/api';
+import { path, getForum, getThread,getParent } from '../api/api';
 import Zmage from 'react-zmage';
-import ReactHtmlParser,{ convertNodeToElement } from 'react-html-parser';
+import ReactHtmlParser from 'react-html-parser';
 import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
 
@@ -52,38 +52,23 @@ function ThreadList(props) {
 function ThreadContent(props) {
   return (
     <div className="thread-content">
-      <ThreadItem content={props.content} />
-      <ThreadReply content={props.content.replys} />
-    </div>
-  )
-}
-
-
-
-//回应控件
-function ThreadReply(props) {
-  return (
-    <div className="thread-replys">
-      {props.content.map(content => {
-        return (
-          <div className="thread-reply-item" key={content.id}>
-            <ThreadInfo content={content} />
-            <ThreadMain content={content} />
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-function ThreadItem(props) {
-  return (
-    <>
       <ThreadInfo content={props.content} />
       <ThreadMain content={props.content} />
-    </>
+      {props.content.remainReplys && <div className="remain-replys">有 {props.content.remainReplys} 篇回应被折叠</div>}
+      <div className="thread-replys">
+        {props.content.replys.map(content => {
+          return (
+            <div className="thread-reply-item" key={content.id}>
+              <ThreadInfo content={content} />
+              <ThreadMain content={content} />
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
+
 //
 function ThreadInfo(props) {
   const dispatch = useContext(DataStore).dispatch;
@@ -100,7 +85,13 @@ function ThreadInfo(props) {
       }
       <span
         className="h-threads-info-id"
-        onClick={() => {dispatch({type: 'changeThread',id: props.content.id})}}
+        onClick={() => {
+          getParent({id: props.content.id}).then(res => {
+            if(res.ok) {
+              dispatch({type: 'changeThread',id: res.id});
+            }
+          })
+        }}
       >
           No.{props.content.id}
       </span>

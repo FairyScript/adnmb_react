@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { path, getForum, getThread,getParent } from '../api/api';
+import { path, getForum, getThread, getRef, getParent } from '../api/api';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
 import { DataStore } from './MainPage';
@@ -50,6 +50,15 @@ function ThreadList(props) {
 
 //串内容组件
 function ThreadContent(props) {
+  const [pos,setPos] = useState({x: 0, y: 0});
+  const [display,setDisplay] = useState('none');
+  const _style = {
+    display,
+    position: 'fixed',
+    left: pos.x,
+    top: pos.y,
+    background: 'red'
+  }
   return (
     <div className="thread-content">
       <ThreadInfo content={props.content} />
@@ -60,10 +69,13 @@ function ThreadContent(props) {
           return (
             <div className="thread-reply-item" key={content.id}>
               <ThreadInfo content={content} />
-              <ThreadMain content={content} />
+              <ThreadMain content={content} action={{setPos,setDisplay}}/>
             </div>
           )
         })}
+      </div>
+      <div className="thread-preview" style={_style}>
+        {`X:${pos.x} Y:${pos.y}`}
       </div>
     </div>
   )
@@ -86,14 +98,14 @@ function ThreadInfo(props) {
       <span
         className="h-threads-info-id"
         onClick={() => {
-          getParent({id: props.content.id}).then(res => {
-            if(res.ok) {
-              dispatch({type: 'changeThread',id: res.id});
+          getParent({ id: props.content.id }).then(res => {
+            if (res.ok) {
+              dispatch({ type: 'changeThread', id: res.id });
             }
           })
         }}
       >
-          No.{props.content.id}
+        No.{props.content.id}
       </span>
     </div>
   )
@@ -108,14 +120,35 @@ function ThreadMain(props) {
    * 当回应与正文之间没有分隔符时,无法正常解析
    * 有机会再修,初步想法是在他们之间插入一个空格丢回去重新parse
    */
-  const transform = (node,index) => {
-    if(/>>No\.\d+/.test(node.data)){
+  const transform = (node, index) => {
+    if (/>>No\.\d+/.test(node.data)) {
       let rid = node.data.match(/>>No\.(\d+)/);
       return (
         <span
           className="reply-number"
           key={index}
-          onDoubleClick={() => {console.log(rid[1])}}
+          onMouseEnter={() => {props.action.setDisplay('block')}}
+          onMouseLeave={() => {props.action.setDisplay('none')}}
+          onMouseMove={e => {
+            props.action.setPos({
+              x: e.clientX + 20,
+              y: e.clientY - 30
+            });
+            //console.log(pos);
+            //实际工作代码,注释
+            /* const res = await getRef({ id: rid[1] });
+            if (res.ok) {
+              const json = res.json;
+              return (
+                <div className="quicklook-ref">
+                  <ThreadInfo content={props.content} />
+                  <ThreadMain content={props.content} />
+                </div>
+                
+              )
+            } */
+          }}
+          onDoubleClick={() => { console.log(rid[1]) }}
         >
           {rid[0]}
         </span>
@@ -123,15 +156,15 @@ function ThreadMain(props) {
     }
   }
   return (
-    <>
+    <div className="thread-main">
       {props.content.img !== '' &&
         <Zmage
           src={`${path.cdnPath}thumb/${props.content.img}${props.content.ext}`}
           alt={props.content.img}
           set={[{ src: `${path.cdnPath}image/${props.content.img}${props.content.ext}` }]}
         />}
-      {ReactHtmlParser(props.content.content,{transform})}
-    </>
+      {ReactHtmlParser(props.content.content, { transform })}
+    </div>
   )
 }
 

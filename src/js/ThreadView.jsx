@@ -50,32 +50,45 @@ function ThreadList(props) {
 
 //串内容组件
 function ThreadContent(props) {
-  const [pos,setPos] = useState({x: 0, y: 0});
-  const [display,setDisplay] = useState('none');
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [display, setDisplay] = useState('none');
+  const [replyConetnt,setContent] = useState();
   const _style = {
     display,
     position: 'fixed',
+    minWidth: 100,
+    minHeight: 50,
     left: pos.x,
     top: pos.y,
-    background: 'red'
+    background: 'pink'
   }
   return (
     <div className="thread-content">
       <ThreadInfo content={props.content} />
       <ThreadMain content={props.content} />
-      {props.content.remainReplys && <div className="remain-replys">有 {props.content.remainReplys} 篇回应被折叠</div>}
+      {props.content.remainReplys && <div className="remain-replys">有 {props.content.remainReplys} 篇回应被折叠</div>/* TODO: 这里可以考虑使用伪元素 */}
+      
       <div className="thread-replys">
         {props.content.replys.map(content => {
           return (
             <div className="thread-reply-item" key={content.id}>
               <ThreadInfo content={content} />
-              <ThreadMain content={content} action={{setPos,setDisplay}}/>
+              <ThreadMain content={content} action={{ setPos, setDisplay, setContent }} />
             </div>
           )
         })}
       </div>
+
       <div className="thread-preview" style={_style}>
-        {`X:${pos.x} Y:${pos.y}`}
+        {
+          replyConetnt && (
+            <>
+            <ThreadInfo content={replyConetnt} />
+            <ThreadMain content={replyConetnt} />
+            </>
+          )
+        }
+        
       </div>
     </div>
   )
@@ -120,6 +133,8 @@ function ThreadMain(props) {
    * 当回应与正文之间没有分隔符时,无法正常解析
    * 有机会再修,初步想法是在他们之间插入一个空格丢回去重新parse
    */
+  const dispatch = useContext(DataStore).dispatch;
+
   const transform = (node, index) => {
     if (/>>No\.\d+/.test(node.data)) {
       let rid = node.data.match(/>>No\.(\d+)/);
@@ -127,28 +142,26 @@ function ThreadMain(props) {
         <span
           className="reply-number"
           key={index}
-          onMouseEnter={() => {props.action.setDisplay('block')}}
-          onMouseLeave={() => {props.action.setDisplay('none')}}
+          onMouseEnter={() => {
+            props.action.setDisplay('block');
+            getReply(rid[1]).then(json => {
+              props.action.setContent(json);
+            });
+          }}
+          onMouseLeave={() => { props.action.setDisplay('none') }}
           onMouseMove={e => {
             props.action.setPos({
               x: e.clientX + 20,
               y: e.clientY - 30
             });
-            //console.log(pos);
-            //实际工作代码,注释
-            /* const res = await getRef({ id: rid[1] });
-            if (res.ok) {
-              const json = res.json;
-              return (
-                <div className="quicklook-ref">
-                  <ThreadInfo content={props.content} />
-                  <ThreadMain content={props.content} />
-                </div>
-                
-              )
-            } */
           }}
-          onDoubleClick={() => { console.log(rid[1]) }}
+          onDoubleClick={() => {
+            getParent({ id: props.content.id }).then(res => {
+              if (res.ok) {
+                dispatch({ type: 'changeThread', id: res.id });
+              }
+            })
+          }}
         >
           {rid[0]}
         </span>
@@ -168,6 +181,26 @@ function ThreadMain(props) {
   )
 }
 
+//Ref获取和缓存
+//使用了sessionStorage缓存获取到的串内容
+async function getReply(rid) {
+  let storage = window.sessionStorage;
+  let json = {};
+  //console.log(rid,storage.rid);
+  if (storage[rid] !== undefined) {
+    json = JSON.parse(storage[rid]);
+  } else {
+    //console.log('缓存未命中');
+    const res = await getRef({ id: rid });
+    if (res.ok) {
+      json = res.json;
+    } else {
+      //异常情况下需要手动构建json
+    }
+    storage[rid] = JSON.stringify(res.json);
+  }
+  return json
+}
 //页数控件
 function ThreadPage(props) {
   //页数按钮组件

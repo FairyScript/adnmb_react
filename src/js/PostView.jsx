@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { formik, Formik } from 'formik';
 import { DataStore } from './MainPage';
 import { postThread } from '../api/api';
@@ -11,77 +11,100 @@ function DebugTool(props) {
 function PostView(props) {
   const forumInfo = useContext(DataStore).forumInfo;
   const postForm = (
-    <Formik
-      initialValues={{
-        resto: '',
-        isManager: false,
-        name: '',
-        email: '',
-        title: '',
-        content: '',
+    <Formik 
+      initialValues = {{
         water: true,
-        image: undefined
+        isManager: false
       }}
-      onSubmit={((values, { setSubmitting }) => {
+      onSubmit = {(values, { setSubmitting }) => {
         setTimeout(() => {
-          let body = new FormData();
-          for (let k in values) {
-            body.append(k, values[k]);
-          }
-          console.log(body);
-        }, 1000);
-      })}
+          alert(JSON.stringify(values, null, 2));
+          setSubmitting(false);
+        }, 500);
+      }}
     >
-      {({
-        values,
-        errors,
-        touched,
-        handleChange,
-        handleBlur,
-        handleSubmit,
-        isSubmitting,
-        /* and other goodies */
-      }) => (
-        <form onSubmit={handleSubmit}>
-          {`回应: ${values.resto}`}
-          <input
-            type="name"
-            name="name"
-            onChange={handleChange}
-            onBlur={handleBlur}
-            value={values.name}
-          />
-          <input
-            type="email"
-            name="email"
-            onChange={handleChange}
-            onBlur={handleBlur}
-            value={values.email}
-          />
-          <textarea
-            type="content"
-            name="content"
-            onChange={handleChange}
-            onBlur={handleBlur}
-            value={values.content}
-          />
-          <button type="submit" disabled={isSubmitting}>
-            Submit
-          </button>
-        </form>
-        )}
-    </Formik>);
+      {props => {
+        const {
+          values,
+          touched,
+          errors,
+          dirty,
+          isSubmitting,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          handleReset,
+        } = props;
+        return (
+          <form onSubmit={handleSubmit}>
+            <label htmlFor="post-name">
+              名称
+            </label>
+            <input
+              id="post-name"
+              type="text"
+              value={values.name}
+              onChange={handleChange}
+              className="post-item"
+            />
+            <label htmlFor="post-email">
+              Email
+            </label>
+            <input
+              id="post-email"
+              type="text"
+              value={values.email}
+              onChange={handleChange}
+              className="post-item"
+            />
+            <label htmlFor="post-title">
+              标题
+            </label>
+            <input
+              id="post-title"
+              type="text"
+              value={values.title}
+              onChange={handleChange}
+              className="post-item"
+            />
+            <label htmlFor="post-content">
+              正文
+            </label>
+            <textarea
+              id="post-content"
+              type="text"
+              value={values.content}
+              onChange={handleChange}
+              className="post-item"
+            />
+            <label>上传图片</label>
+            <input
+              id="post-water"
+              type="checkbox"
+              checked={values.water}
+              onChange={handleChange}
+              className="post-item"
+            />添加水印
+            <input
+              id="post-title"
+              type="checkbox"
+              checked={values.water}
+              onChange={handleChange}
+              className="post-item"
+            />
+            <button type="submit" disabled={isSubmitting}>
+              提交
+            </button>
+          </form>
+        )
+      }}
+    </Formik>
+  )
 
   return (
-    <div className="post-view">
-      <div className="postform">
-        {postForm}
-        <ToolBar />
-      </div>
-      {/* <div
-          className="forum-message"
-          dangerouslySetInnerHTML={{ __html:  }}
-        /> */}
+    <div className="post-form">
+      {postForm}
+      这里是版规
     </div>
   )
 }

@@ -148,7 +148,10 @@ function ThreadMain(props) {
               props.action.setContent(json);
             });
           }}
-          onMouseLeave={() => { props.action.setDisplay('none') }}
+          onMouseLeave={() => { 
+            props.action.setDisplay('none');
+            props.action.setContent(null);//清空state
+          }}
           onMouseMove={e => {
             props.action.setPos({
               x: e.clientX + 20,
@@ -183,6 +186,7 @@ function ThreadMain(props) {
 
 //Ref获取和缓存
 //使用了sessionStorage缓存获取到的串内容
+//TODO 考虑移出组件文件
 async function getReply(rid) {
   let storage = window.sessionStorage;
   let json = {};

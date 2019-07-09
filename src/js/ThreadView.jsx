@@ -60,7 +60,6 @@ function ThreadContent(props) {
     minHeight: 50,
     left: pos.x,
     top: pos.y,
-    background: 'pink'
   }
   return (
     <div className="thread-content">

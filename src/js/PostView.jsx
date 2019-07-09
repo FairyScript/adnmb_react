@@ -1,111 +1,125 @@
-import React, { useState, useContext } from 'react';
-import { formik, Formik } from 'formik';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { Formik, Form, Field } from 'formik';
+import Dropzone from 'react-dropzone';
 import { DataStore } from './MainPage';
 import { postThread } from '../api/api';
+import { Thumb } from './3rd-party/Thumb';
 import '../css/PostView.scss'
+
+function PostView(props) {
+  return (
+    <div className="post-view">
+      <DebugTool />
+      <PostForm forumList={props.forumList} />
+      这里是版规
+      <ToolBar />
+    </div>
+  )
+}
+
 function DebugTool(props) {
   return null;
 }
 
 //发串窗,缓存也保管
-function PostView(props) {
+function PostForm(props) {
   const forumInfo = useContext(DataStore).forumInfo;
-  const postForm = (
-    <Formik 
-      initialValues = {{
+  const [postInfo, setPostInfo] = useState({ mode: null, msg: null, showId: null });
+
+  useEffect(() => {
+    //console.log(postInfo);
+    switch (forumInfo.mode) {
+      case 'f': {
+        setPostInfo({ mode: 'fid', msg: '发串模式', showId: props.forumList[forumInfo.id].name });
+        return
+      }
+      case 't': {
+        setPostInfo({ mode: 'resto', msg: '回应模式', showId: `No.${forumInfo.id}` });
+        return
+      }
+    }
+  }, [forumInfo]);
+
+  const PostItem = props => {
+    return (
+      <div className="post-item">
+        {props.label && <label htmlFor={props.name}>{props.label}</label>}
+        <Field {...props} />
+      </div>)
+  }
+
+  return (
+    <Formik
+      initialValues={{
+        [postInfo.mode]: forumInfo.id,
+        name: '',
+        email: '',
+        title: '',
+        content: '',
+        image: null,
         water: true,
         isManager: false
       }}
-      onSubmit = {(values, { setSubmitting }) => {
-        setTimeout(() => {
-          alert(JSON.stringify(values, null, 2));
-          setSubmitting(false);
-        }, 500);
+      enableReinitialize={true}
+      isInitialValid={false}
+      validate={values => {
+        let errors = {};
+        if (!values.image && values.content === '') {
+          console.log('content empty');
+          errors.content = '内容不能为空';
+        }
+        return errors;
+      }}
+      onSubmit={(values, { setSubmitting }) => {
+        let formData = new FormData();
+        for (let key in values) {
+          formData.append(key, values[key]);
+        }
+        //调试代码
+        for (let pair of formData.entries()) {
+          console.log(`${pair[0]}: [${pair[1]}]`);
+        }
+        setTimeout(setSubmitting(false), 1000);
       }}
     >
-      {props => {
-        const {
-          values,
-          touched,
-          errors,
-          dirty,
-          isSubmitting,
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          handleReset,
-        } = props;
+      {({ isSubmitting, setFieldValue, errors }) => {
         return (
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="post-name">
-              名称
-            </label>
-            <input
-              id="post-name"
-              type="text"
-              value={values.name}
-              onChange={handleChange}
-              className="post-item"
-            />
-            <label htmlFor="post-email">
-              Email
-            </label>
-            <input
-              id="post-email"
-              type="text"
-              value={values.email}
-              onChange={handleChange}
-              className="post-item"
-            />
-            <label htmlFor="post-title">
-              标题
-            </label>
-            <input
-              id="post-title"
-              type="text"
-              value={values.title}
-              onChange={handleChange}
-              className="post-item"
-            />
-            <label htmlFor="post-content">
-              正文
-            </label>
-            <textarea
-              id="post-content"
-              type="text"
-              value={values.content}
-              onChange={handleChange}
-              className="post-item"
-            />
-            <label>上传图片</label>
-            <input
-              id="post-water"
-              type="checkbox"
-              checked={values.water}
-              onChange={handleChange}
-              className="post-item"
-            />添加水印
-            <input
-              id="post-title"
-              type="checkbox"
-              checked={values.water}
-              onChange={handleChange}
-              className="post-item"
-            />
+          <Form className="post-form">
+            {`${postInfo.msg} ${postInfo.showId}`}
+            <PostItem type="text" name="name" label="名称" />
+            <PostItem type="email" name="email" label="E-mail" />
+            <PostItem type="text" name="title" label="标题" />
+            <PostItem type="text" name="content" component="textarea" label="正文" />
+            {errors.content && <div id="feedback">{errors.content}</div>}
+            <PostItem type="checkbox" name="water" label="水印" />
+            <Dropzone
+              accept="image/*"
+              multiple={false}
+              noKeyboard={true}
+              onDropAccepted={file => {
+                //console.log(file);
+                setFieldValue('image', file)
+              }}
+            >
+              {({ getRootProps, getInputProps, acceptedFiles }) => (
+                <section>
+                  <div {...getRootProps()}>
+                    <input {...getInputProps()} />
+                    <p>Drag 'n' drop some files here, or click to select files</p>
+                  </div>
+                  {acceptedFiles[0] && <Thumb file={acceptedFiles[0]} />}
+                </section>
+
+              )}
+            </Dropzone>
             <button type="submit" disabled={isSubmitting}>
               提交
-            </button>
-          </form>
+          </button>
+          </Form>
         )
-      }}
+      }
+      }
     </Formik>
-  )
-
-  return (
-    <div className="post-form">
-      {postForm}
-      这里是版规
-    </div>
   )
 }
 

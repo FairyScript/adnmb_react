@@ -52,7 +52,7 @@ function ThreadList(props) {
 function ThreadContent(props) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [display, setDisplay] = useState('none');
-  const [replyConetnt,setContent] = useState();
+  const [replyContent, setContent] = useState();
   const _style = {
     display,
     position: 'fixed',
@@ -64,9 +64,10 @@ function ThreadContent(props) {
   return (
     <div className="thread-content">
       <ThreadInfo content={props.content} />
-      <ThreadMain content={props.content} />
+      <ThreadMain content={props.content} action={{ setPos, setDisplay, setContent }} />
+      {props.content.sage === '1' && <div className="message-sage">本串已被SAGE</div>}
       {props.content.remainReplys && <div className="remain-replys">有 {props.content.remainReplys} 篇回应被折叠</div>/* TODO: 这里可以考虑使用伪元素 */}
-      
+
       <div className="thread-replys">
         {props.content.replys.map(content => {
           return (
@@ -79,15 +80,7 @@ function ThreadContent(props) {
       </div>
 
       <div className="thread-preview" style={_style}>
-        {
-          replyConetnt && (
-            <>
-            <ThreadInfo content={replyConetnt} />
-            <ThreadMain content={replyConetnt} />
-            </>
-          )
-        }
-        
+        {replyContent}
       </div>
     </div>
   )
@@ -110,7 +103,7 @@ function ThreadInfo(props) {
       <span
         className="h-threads-info-id"
         onClick={() => {
-          getParent({ id: props.content.id }).then(res => {
+          getParent(props.content.id).then(res => {
             if (res.ok) {
               dispatch({ type: 'changeThread', id: res.id });
             }
@@ -143,11 +136,12 @@ function ThreadMain(props) {
           key={index}
           onMouseEnter={() => {
             props.action.setDisplay('block');
-            getReply(rid[1]).then(json => {
-              props.action.setContent(json);
+            getReply(rid[1]).then(component => {
+              //console.log(json);
+              props.action.setContent(component);
             });
           }}
-          onMouseLeave={() => { 
+          onMouseLeave={() => {
             props.action.setDisplay('none');
             props.action.setContent(null);//清空state
           }}
@@ -158,7 +152,7 @@ function ThreadMain(props) {
             });
           }}
           onDoubleClick={() => {
-            getParent({ id: props.content.id }).then(res => {
+            getParent(props.content.id).then(res => {
               if (res.ok) {
                 dispatch({ type: 'changeThread', id: res.id });
               }
@@ -194,15 +188,22 @@ async function getReply(rid) {
     json = JSON.parse(storage[rid]);
   } else {
     //console.log('缓存未命中');
-    const res = await getRef({ id: rid });
+    const res = await getRef(rid);
     if (res.ok) {
-      json = res.json;
+      if (res.json === 'thread不存在') return <div>{res.json}</div>
+        json = res.json;
     } else {
       //异常情况下需要手动构建json
+      return <div>Error!</div>
     }
     storage[rid] = JSON.stringify(res.json);
   }
-  return json
+  return (
+    <>
+      <ThreadInfo content={json} />
+      <ThreadMain content={json} />
+    </>
+  )
 }
 //页数控件
 function ThreadPage(props) {

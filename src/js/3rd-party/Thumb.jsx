@@ -1,38 +1,32 @@
-import React from 'react';
-class Thumb extends React.Component {
-    state = {
-        loading: false,
-        thumb: undefined,
+import React, { useState } from 'react';
+
+function Thumb(props) {
+    const [loading, setLoading] = useState(false);
+    const [thumb, setThumb] = useState(undefined);
+
+    const file = props.file;
+
+    if (!file) { return null; }
+
+    if (loading) { return <p>loading...</p>; }
+
+    let reader = new FileReader();
+
+    reader.onloadend = () => {
+        setLoading(false);
+        setThumb(reader.result);
     };
 
-    componentWillReceiveProps(nextProps) {
-        if (!nextProps.file) { return; }
+    reader.readAsDataURL(file);
 
-        this.setState({ loading: true }, () => {
-            let reader = new FileReader();
-
-            reader.onloadend = () => {
-                this.setState({ loading: false, thumb: reader.result });
-            };
-
-            reader.readAsDataURL(nextProps.file);
-        });
-    }
-
-    render() {
-        const { file } = this.props;
-        const { loading, thumb } = this.state;
-
-        if (!file) { return null; }
-
-        if (loading) { return <p>loading...</p>; }
-
-        return (<img src={thumb}
+    return (
+        <img src={thumb}
             alt={file.name}
             className="img-thumbnail mt-2"
             height={200}
-            width={200} />);
-    }
+            width={200} />
+    )
 }
 
-export {Thumb};
+
+export { Thumb };

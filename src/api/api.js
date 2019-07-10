@@ -9,7 +9,7 @@ const path = {
     apiPath: '/Api/',
     managePath: '/Home/Forum/',
     cdnPath: 'https://nmbimg.fastmirror.org/',
-    postPath: 'https://adnmb2.com/Home/Forum/doReplyThread.html',
+    postPath: '/Home/Forum/doReplyThread.html',
     testPath: '/'
 };
 const config = {
@@ -59,13 +59,14 @@ async function postThread(formData) {
         headers: {"user-agent": "HavefunClient-Dawn"},
         method: 'POST',
         body: formData,
-        mode: 'cors',
+        mode: 'no-cors',
         credentials: "include"
     }
     try {
         let res = await fetch(url,config);
         if(res.ok) {
             let text = await res.text();
+            console.log(text);
             //检测返回是否成功
             let result = /<p class="(.+)">(.+)<\/p>/.exec(text);
             console.log(result);
@@ -113,14 +114,14 @@ function getForum(props = {id: 4,page: 1}) {
 }
 
 //获取*单个*串内容
-function getRef(props = {id: 14500641}) {
+function getRef(id = 14500641) {
     console.log('getRef!');
-    return getContent('ref',props);
+    return getContent('ref',{id});
 }
 
 //获取父串
-async function getParent(props = {id: 14500641}) {
-    const url = `${path.managePath}ref?id=${props.id}`;
+async function getParent(id = 14500641) {
+    const url = `${path.managePath}ref?id=${id}`;
     console.log(url);
     try {
         const res = await fetch(url,config);
@@ -181,7 +182,7 @@ function getUrl() {
     let s = new URLSearchParams(url.search).entries();
     while (true) {
         let t = s.next();
-        console.log(t);
+        //console.log(t);
         if(t.done) break;
         e[t.value[0]] = t.value[1];
     }

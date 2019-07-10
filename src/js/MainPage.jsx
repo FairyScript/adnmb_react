@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useCallback } from 'react';
 import { getForumList, getUrl } from '../api/api'
 import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';
@@ -24,28 +24,41 @@ function MainPage() {
   const [forumList, setForumList] = useState();
   const [forumInfo, dispatch] = useReducer(reducer, defaultData);
 
-  function reducer(state, action) {
+  function reducer(state, payload) {
     //console.log(action);
-    let page = 1;
-    if (action.page) {
-      page = action.page;
-    }
+    let action = (payload.type === 'popstate') ? payload.state : payload;
+    let page = action.page ? action.page : 1;
+    let url = '';
+    let newState = {};
     switch (action.type) {
       case 'changeForum': {
-        return { ...state, mode: 'f', id: Number(action.id), page };//id强制类型转换为Number
+        url = `/f/${forumList[action.id].name}`;
+        newState = { ...state, mode: 'f', id: Number(action.id), page };//id强制类型转换为Number
+        break;
       }
       case 'changeThread': {
-        return { ...state, mode: 't', id: Number(action.id), page };
+        url = `/t/${action.id}`;
+        newState = { ...state, mode: 't', id: Number(action.id), page };
+        break;
       }
       case 'changePage': {
-        return { ...state, page };
+        url = `?page=${action.page}`;
+        newState = { ...state, page };
+        break;
       }
       default: {
         console.error(action);
       }
     }
+    console.log(url);
+    if(payload.type !== 'popstate') window.history.pushState(action, null, url);
+    return newState;
   }
 
+  window.onpopstate = e => {
+    console.log(e.state);
+    dispatch({type: 'popstate', state: e.state});
+  }
   //init
   useEffect(() => {
     async function fetchData() {
@@ -108,10 +121,10 @@ function MainPage() {
         {/**暂时没有办法获取到初始的active forum，切换高亮的逻辑应在子组件内实现 */}
         <LeftSideBar forumList={forumList} />
         {forumInfo.id !== 0 && (
-        <>
-        <ThreadView forumList={forumList} />
-        <PostView forumList={forumList} />
-        </>
+          <>
+            <ThreadView forumList={forumList} />
+            <PostView forumList={forumList} />
+          </>
         )}
       </DataStore.Provider>
     </div>

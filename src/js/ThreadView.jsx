@@ -2,18 +2,16 @@ import React, { useState, useEffect, useContext } from 'react';
 import { path, getForum, getThread, getRef, getParent } from '../api/api';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
-import { DataStore } from './MainPage';
+//import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
 
 var forumList = {};
 
 function ThreadView(props) {
-  const forumInfo = useContext(DataStore).forumInfo;
-  forumList = props.forumList;
   return (
     <div className="thread-view">
-      <ThreadPage mode={forumInfo.mode} page={forumInfo.page} />
-      <ThreadList mode={forumInfo.mode} id={forumInfo.id} page={forumInfo.page} />
+      <ThreadPage {...props} />
+      <ThreadList {...props} />
     </div>
   );
 }
@@ -191,7 +189,7 @@ async function getReply(rid) {
     const res = await getRef(rid);
     if (res.ok) {
       if (res.json === 'thread不存在') return <div>{res.json}</div>
-        json = res.json;
+      json = res.json;
     } else {
       //异常情况下需要手动构建json
       return <div>Error!</div>

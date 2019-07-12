@@ -8,6 +8,7 @@ import { Thumb } from './Thumb';
 import '../css/PostView.scss'
 
 function PostView(props) {
+  return null;
   return (
     <div className="post-view">
       <DebugTool />
@@ -65,7 +66,7 @@ function PostForm(props) {
       isInitialValid={false}
       validate={values => {
         let errors = {};
-        if(values[postInfo.mode] === -1) {
+        if (values[postInfo.mode] === -1) {
           errors.content = '时间线不能发串';
         }
         if (!values.image && values.content === '') {
@@ -77,7 +78,7 @@ function PostForm(props) {
       onSubmit={(values, { setSubmitting }) => {
         let formData = new FormData();
         for (let key in values) {
-          if(values[key]) formData.append(key, values[key]);
+          if (values[key]) formData.append(key, values[key]);
         }
 
         console.log(values);

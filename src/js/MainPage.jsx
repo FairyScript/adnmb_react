@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useReducer, useCallback } from 'react';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-import {parse} from 'query-string';
+import { parse } from 'query-string';
 import { getForumList, getUrl } from '../api/api';
 import { Loading } from './Loading';
 import { LeftSideBar } from './LeftSideBar';
@@ -48,20 +48,20 @@ function MainPage(props) {
       <Loading />
       :
       <Router>
-        <Route path="/:mode/:id" render={({match,location}) => {
+        <Route path="/:mode/:id" render={({ match, location, history }) => {
           let parsed = parse(location.search);
           return (
-          <div className="main-page">
-            <LeftSideBar forumList={forumList} />
-            <MainPage {...match.params} {...parsed}/>
-            <PostView {...match.params} />
-          </div>
+            <div className="main-page">
+              <LeftSideBar forumList={forumList} history={history} />
+              <MainPage {...match.params} {...parsed} />
+              <PostView {...match.params} />
+            </div>
           )
 
-        }}/>
+        }} />
       </Router>
 
 
   )
 }
-export {MainPage };
+export { MainPage };

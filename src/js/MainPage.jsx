@@ -11,6 +11,33 @@ import '../css/MainPage.scss';
  */
 const DataStore = React.createContext(null);
 
+function reducer(state, action) {
+  //console.log(action);
+  console.log('state:', state,'action:',action);
+  let page = action.page ? action.page : 1;
+  switch (action.type) {
+    case 'changeForum': {
+      //window.history.pushState(state,null,`/f/${forumList[action.id].name}`);
+      return { ...state, mode: 'f', id: Number(action.id), page };//id强制类型转换为Number
+    }
+    case 'changeThread': {
+      //window.history.pushState(state,null,`/t/${action.id}`);
+      return { ...state, mode: 't', id: Number(action.id), page };
+    }
+    case 'changePage': {
+      //window.history.pushState(state,null,`?page=${page}`);
+      return { ...state, page };
+    }
+    case 'popstate': {
+      //console.log('state:',state,'action',action.state);
+      return { ...action.state };
+    }
+    default: {
+      console.error(action);
+    }
+  }
+}
+
 //A岛主视图
 function MainPage() {
   //默认state
@@ -22,43 +49,9 @@ function MainPage() {
 
   //Hook
   const [forumList, setForumList] = useState();
+  const [loading, setLoading] = useState(true);
   const [forumInfo, dispatch] = useReducer(reducer, defaultData);
 
-  function reducer(state, payload) {
-    //console.log(action);
-    let action = (payload.type === 'popstate') ? payload.state : payload;
-    let page = action.page ? action.page : 1;
-    let url = '';
-    let newState = {};
-    switch (action.type) {
-      case 'changeForum': {
-        url = `/f/${forumList[action.id].name}`;
-        newState = { ...state, mode: 'f', id: Number(action.id), page };//id强制类型转换为Number
-        break;
-      }
-      case 'changeThread': {
-        url = `/t/${action.id}`;
-        newState = { ...state, mode: 't', id: Number(action.id), page };
-        break;
-      }
-      case 'changePage': {
-        url = `?page=${action.page}`;
-        newState = { ...state, page };
-        break;
-      }
-      default: {
-        console.error(action);
-      }
-    }
-    console.log(url);
-    if(payload.type !== 'popstate') window.history.pushState(action, null, url);
-    return newState;
-  }
-
-  window.onpopstate = e => {
-    console.log(e.state);
-    dispatch({type: 'popstate', state: e.state});
-  }
   //init
   useEffect(() => {
     async function fetchData() {
@@ -108,6 +101,7 @@ function MainPage() {
         tempInfo.page = url.page;
       }
       dispatch(tempInfo);
+      setLoading(false);
       /**对于传入URL，无法正确解析所对应的板块
        * 需要API支持
        */
@@ -115,13 +109,24 @@ function MainPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    console.log('will set:',forumInfo);
+    //window.history.pushState(state,null,`/f/${forumList[action.id].name}`);
+  },[forumInfo])
+
+  window.onpopstate = e => {
+    console.log(e.state);
+    //dispatch({ type: 'popstate', state: e.state });
+  }
+
   return (
     <div className="main-page">
       <DataStore.Provider value={{ forumInfo, dispatch }}>
-        {/**暂时没有办法获取到初始的active forum，切换高亮的逻辑应在子组件内实现 */}
-        <LeftSideBar forumList={forumList} />
-        {forumInfo.id !== 0 && (
+        {loading ?
+          <h1>Loading...</h1>
+          : (
           <>
+            <LeftSideBar forumList={forumList} />
             <ThreadView forumList={forumList} />
             <PostView forumList={forumList} />
           </>

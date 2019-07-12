@@ -8,15 +8,12 @@
  */
 
 import React from 'react';
-import { CookiesProvider } from 'react-cookie';
 import { MainPage } from './js/MainPage';
 import { Test } from './test';
 
 function App() {
   return (
-    <CookiesProvider>
       <MainPage />
-    </CookiesProvider>
   )
 }
 

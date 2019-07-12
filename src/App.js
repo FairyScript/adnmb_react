@@ -9,11 +9,10 @@
 
 import React from 'react';
 import { MainPage } from './js/MainPage';
-import { Test } from './test';
 
 function App() {
   return (
-      <MainPage />
+    <MainPage />
   )
 }
 

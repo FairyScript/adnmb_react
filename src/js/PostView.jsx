@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Formik, Form, Field } from 'formik';
 import Dropzone from 'react-dropzone';
-import { useCookies } from 'react-cookie';
+//import { useCookies } from 'react-cookie';
 import { DataStore } from './MainPage';
 import { postThread } from '../api/api';
 import { Thumb } from './3rd-party/Thumb';

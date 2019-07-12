@@ -1,28 +1,20 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { path, getForum, getThread, getRef, getParent } from '../api/api';
+import { withRouter } from "react-router-dom";
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
+import { path, getForum, getThread, getRef, getParent } from '../api/api';
 //import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
+
+var collection = require('lodash');
 
 var forumList = {};
 
 function ThreadView(props) {
-  return (
-    <div className="thread-view">
-      <ThreadPage {...props} />
-      <ThreadList {...props} />
-    </div>
-  );
-}
-
-//正文列表
-function ThreadList(props) {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
-      if (props.id === 0) return null;
       if (props.mode === 'f') {
         let res = await getForum({ id: props.id, page: props.page });
         if (res.ok) {
@@ -42,8 +34,14 @@ function ThreadList(props) {
     }
     fetchData();
   }, [props])
-
-  return content;
+  return (
+    <div className="thread-view">
+      <div className="thread-list">
+      {content}
+      </div>
+      <ThreadPage {...props} />
+    </div>
+  );
 }
 
 //串内容组件
@@ -86,7 +84,6 @@ function ThreadContent(props) {
 
 //
 function ThreadInfo(props) {
-  const dispatch = useContext(DataStore).dispatch;
   return (
     <div className="thread-info">
       <span className="h-threads-info-title">{props.content.title} </span>
@@ -98,18 +95,19 @@ function ThreadInfo(props) {
           [{forumList[props.content.fid].name}]
         </span>
       }
-      <span
+      {withRouter(<span
         className="h-threads-info-id"
-        onClick={() => {
+        onClick={({ history }) => {
           getParent(props.content.id).then(res => {
             if (res.ok) {
-              dispatch({ type: 'changeThread', id: res.id });
+              history.push(`/t/${res.id}`);
             }
           })
         }}
       >
         No.{props.content.id}
       </span>
+      )}
     </div>
   )
 }
@@ -128,7 +126,7 @@ function ThreadMain(props) {
   const transform = (node, index) => {
     if (/>>No\.\d+/.test(node.data)) {
       let rid = node.data.match(/>>No\.(\d+)/);
-      return (
+      return withRouter(
         <span
           className="reply-number"
           key={index}
@@ -149,10 +147,10 @@ function ThreadMain(props) {
               y: e.clientY - 30
             });
           }}
-          onDoubleClick={() => {
+          onDoubleClick={({ history }) => {
             getParent(props.content.id).then(res => {
               if (res.ok) {
-                dispatch({ type: 'changeThread', id: res.id });
+                history.push(`/t/${res.id}`);
               }
             })
           }}
@@ -206,15 +204,9 @@ async function getReply(rid) {
 //页数控件
 function ThreadPage(props) {
   //页数按钮组件
-  function PageItem(props) {
-    return (
-      <button className="thread-page-button" onClick={props.click}>
-        {props.content}
-      </button>
-    )
-  }
+  const PageItem = props => {
 
-  const dispatch = useContext(DataStore).dispatch;
+  }
 
   return (
     <div className="thread-page">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useReducer, useCallback } from 'react';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import {collection} from 'lodash';
 import { parse } from 'query-string';
 import { getForumList, getUrl } from '../api/api';
 import { Loading } from './Loading';
@@ -7,6 +8,7 @@ import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';
 import { PostView } from './PostView';
 import '../css/MainPage.scss';
+import { ErrorPage } from './404';
 
 //const DataStore = React.createContext(null);
 
@@ -49,16 +51,35 @@ function MainPage(props) {
       :
       <Router>
         <Route path="/:mode/:id" render={({ match, location, history }) => {
+          let forumInfo = {};
           let parsed = parse(location.search);
+          switch(match.params.mode) {
+            case 'f': {
+              let fid = collection.find(forumList,{name: match.params.id});
+              fid ?
+                forumInfo = {
+                  mode: 'f',
+                  id: fid,
+                  ...parsed
+                }
+                : history.replace('/404');
+            }
+            case 't': {
+              forumInfo = {
+                ...match.params,
+                ...parsed
+              }
+            }
+          }
           return (
             <div className="main-page">
-              <LeftSideBar forumList={forumList} history={history} />
-              <MainPage {...match.params} {...parsed} />
-              <PostView {...match.params} />
+              <LeftSideBar forumList={forumList} {...forumInfo} />
+              <MainPage forumList={forumList} {...forumInfo} />
+              <PostView forumList={forumList} {...forumInfo} />
             </div>
           )
-
         }} />
+        <Route path="/404" exact component={ErrorPage} />
       </Router>
 
 

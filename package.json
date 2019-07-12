@@ -13,6 +13,7 @@
     "react-dom": "^16.8.6",
     "react-dropzone": "^10.1.5",
     "react-html-parser": "^2.0.2",
+    "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.0",
     "react-zmage": "^0.7.6",
     "typescript": "^3.5.3"

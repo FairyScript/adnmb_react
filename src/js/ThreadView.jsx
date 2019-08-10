@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext} from 'react';
-import { withRouter, Link } from "react-router-dom";
+import React, { useState, useEffect, useContext } from 'react';
+import { withRouter } from "react-router-dom";
 import _ from 'lodash';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
 import { path, getForum, getThread, getRef, getParent } from '../api/api';
-import {DataStore} from './MainPage';
+import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
 
 
@@ -23,8 +23,8 @@ function ThreadView(props) {
   useEffect(() => {
     async function fetchData() {
       if (mode === 'f') {
-        const fid = _.find(forumList,{name: id}).id;
-        const res = await getForum({ id:fid, page });
+        const fid = _.find(forumList, { name: id }).id;
+        const res = await getForum({ id: fid, page });
         if (res.ok) {
           //console.log(res.json);
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
@@ -43,7 +43,7 @@ function ThreadView(props) {
       }
     }
     fetchData();
-  }, [mode, id])
+  }, [mode, id, page]);
 
   return (
     <div className="thread-view">
@@ -95,13 +95,14 @@ function ThreadContent(props) {
 
 //
 function ThreadInfo(props) {
-  const ThreadNumber = withRouter(({history }) => (
+  const ThreadNumber = withRouter(({ history }) => (
     <span
       className="h-threads-info-id"
       onClick={() => {
         getParent(props.content.id).then(res => {
           if (res.ok) history.push(`/t/${res.id}`);
-        })}}>
+        });
+      }}>
       No.{props.content.id}
     </span>
   ));
@@ -111,11 +112,12 @@ function ThreadInfo(props) {
       <span className="h-threads-info-name">{props.content.name} </span>
       <span className="h-threads-info-time">{props.content.now} </span>
       <span className={`h-threads-info-name${Number(props.content.admin) === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
-      {'fid' in props.content && <span className="h-threads-info-fid">[{_.find(forumList,{id:props.content.fid}).name}]</span>}
+      {'fid' in props.content && <span className="h-threads-info-fid">[{_.find(forumList, { id: props.content.fid }).name}]</span>}
 
-      {<ThreadNumber />}
+      <ThreadNumber />
     </div>
-  )}
+  )
+}
 
 
 //正文内容
@@ -131,7 +133,7 @@ function ThreadMain(props) {
   const transform = (node, index) => {
     if (/>>No\.\d+/.test(node.data)) {
       let rid = node.data.match(/>>No\.(\d+)/);
-      return (
+      const ToThread = withRouter(({history}) => (
         <span
           className="reply-number"
           key={index}
@@ -153,16 +155,15 @@ function ThreadMain(props) {
             });
           }}
           onDoubleClick={() => {
-            /* getParent(props.content.id).then(res => {
-              if (res.ok) {
-                dispatch({ type: 'changeThread', id: res.id });
-              }
-            }) */
+            getParent(props.content.id).then(res => {
+              if (res.ok) history.push(`/t/${res.id}`);
+            });
           }}
         >
           {rid[0]}
         </span>
-      )
+      ));
+      return <ToThread />;
     }
   }
 
@@ -208,7 +209,7 @@ async function getReply(rid) {
   )
 }
 //页数控件
-function ThreadPage({page}) {
+function ThreadPage({ page }) {
 
   return (
     null

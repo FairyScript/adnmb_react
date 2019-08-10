@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
 import _ from 'lodash';
-import { parse } from 'query-string';
-import { getForumList, getUrl } from '../api/api';
+import { getForumList } from '../api/api';
 import { Loading } from './Loading';
 import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';

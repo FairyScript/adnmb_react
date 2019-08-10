@@ -29,9 +29,9 @@ function MainPage(props) {
       if (res.ok) {
         //使用lodash索引
         //不再使用sort
-        let list = [];
-        res.json.forEach(group => {
-          list += group.forums;
+        console.log(res.json);
+        let list = _.flatMap(res.json,g => {
+          return g.forums;
         });
         setForumList(list);
       }
@@ -47,30 +47,10 @@ function MainPage(props) {
       :
       <Router>
         <Route path="/" exact render={()=> <Redirect to="/f/时间线" />} />
-        <Route path="/:mode/:id" render={({ match, location, history }) => {
-          let forumInfo = {};
-          let parsed = parse(location.search);
-          switch(match.params.mode) {
-            case 'f': {
-              let fid = _.find(forumList,{name: match.params.id});
-              fid ?
-                forumInfo = {
-                  mode: 'f',
-                  id: fid,
-                  ...parsed
-                }
-                : history.replace('/404');
-            }
-            case 't': {
-              forumInfo = {
-                ...match.params,
-                ...parsed
-              }
-            }
-          }
+        <Route path="/:mode/:id" render={ ({ match, location, history }) => {
           return (
             <div className="main-page">
-              <LeftSideBar forumList={forumList} {...forumInfo} />
+              <LeftSideBar forumList={forumList} match={match} history={history} />
               {/* <ThreadView forumList={forumList} {...forumInfo} />
               <PostView forumList={forumList} {...forumInfo} /> */}
             </div>

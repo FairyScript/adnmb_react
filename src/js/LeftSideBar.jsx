@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import '../css/LeftSideBar.scss';
 
 function LeftSideBar(props) {
-  //console.log(`LSB ${list}`)
   return (
     <div className="left-side-bar">
       <ForumList list={props.forumList} push={props.history.push} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useReducer, useCallback } from 'react';
 import { BrowserRouter as Router, Route } from "react-router-dom";
-import {collection} from 'lodash';
+import _ from 'lodash';
 import { parse } from 'query-string';
 import { getForumList, getUrl } from '../api/api';
 import { Loading } from './Loading';
@@ -55,7 +55,7 @@ function MainPage(props) {
           let parsed = parse(location.search);
           switch(match.params.mode) {
             case 'f': {
-              let fid = collection.find(forumList,{name: match.params.id});
+              let fid = _.find(forumList,{name: match.params.id});
               fid ?
                 forumInfo = {
                   mode: 'f',

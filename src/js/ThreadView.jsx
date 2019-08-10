@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { withRouter } from "react-router-dom";
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { withRouter, Link } from "react-router-dom";
+import _ from 'lodash';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
 import { path, getForum, getThread, getRef, getParent } from '../api/api';
-//import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
 
-var collection = require('lodash');
 
 var forumList = {};
 
 function ThreadView(props) {
   const [content, setContent] = useState(null);
-
+  const [replyCount,setReplyCount] = useState();
   useEffect(() => {
     async function fetchData() {
       if (props.mode === 'f') {
@@ -21,13 +20,15 @@ function ThreadView(props) {
           //console.log(res.json);
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
           setContent(list);
+          setReplyCount(null);
         }
       }
 
       if (props.mode === 't') {
         let res = await getThread({ id: props.id, pages: props.page });
         if (res.ok) {
-          setContent(<ThreadContent content={res.json} />)
+          setContent(<ThreadContent content={res.json} />);
+          setReplyCount(res.json.replyCount);
         }
         console.log('thread update');
       }
@@ -39,7 +40,7 @@ function ThreadView(props) {
       <div className="thread-list">
       {content}
       </div>
-      <ThreadPage {...props} />
+      <ThreadPage {...props} replyCount />
     </div>
   );
 }
@@ -48,6 +49,7 @@ function ThreadView(props) {
 function ThreadContent(props) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [display, setDisplay] = useState('none');
+  const [moveCount,setMove] = useState(0);
   const [replyContent, setContent] = useState();
   const _style = {
     display,
@@ -57,6 +59,10 @@ function ThreadContent(props) {
     left: pos.x,
     top: pos.y,
   }
+  //控制预览显示
+  //鼠标停留预览串号显示
+  //单击串号悬停
+  const handleDisplay = useCallback(pos=>setPos(pos),[]);
   return (
     <div className="thread-content">
       <ThreadInfo content={props.content} />
@@ -69,7 +75,7 @@ function ThreadContent(props) {
           return (
             <div className="thread-reply-item" key={content.id}>
               <ThreadInfo content={content} />
-              <ThreadMain content={content} action={{ setPos, setDisplay, setContent }} />
+              <ThreadMain content={content} action={{ setPos, setMove, setContent }} />
             </div>
           )
         })}
@@ -121,7 +127,6 @@ function ThreadMain(props) {
    * 当回应与正文之间没有分隔符时,无法正常解析
    * 有机会再修,初步想法是在他们之间插入一个空格丢回去重新parse
    */
-  const dispatch = useContext(DataStore).dispatch;
 
   const transform = (node, index) => {
     if (/>>No\.\d+/.test(node.data)) {
@@ -131,7 +136,7 @@ function ThreadMain(props) {
           className="reply-number"
           key={index}
           onMouseEnter={() => {
-            props.action.setDisplay('block');
+            props.action.setMove();
             getReply(rid[1]).then(component => {
               //console.log(json);
               props.action.setContent(component);
@@ -203,10 +208,7 @@ async function getReply(rid) {
 }
 //页数控件
 function ThreadPage(props) {
-  //页数按钮组件
-  const PageItem = props => {
-
-  }
+  
 
   return (
     <div className="thread-page">

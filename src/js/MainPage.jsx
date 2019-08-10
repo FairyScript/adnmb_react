@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useReducer, useCallback } from 'react';
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
 import _ from 'lodash';
 import { parse } from 'query-string';
 import { getForumList, getUrl } from '../api/api';
 import { Loading } from './Loading';
 import { LeftSideBar } from './LeftSideBar';
-import { ThreadView } from './ThreadView';
-import { PostView } from './PostView';
+//import { ThreadView } from './ThreadView';
+//import { PostView } from './PostView';
 import '../css/MainPage.scss';
 import { ErrorPage } from './404';
 
@@ -26,17 +26,13 @@ function MainPage(props) {
       //暂且放弃了ForumGroup的使用
       //因为之后会增加自定义板块的功能
       let res = await getForumList();
-      let list = {};
       if (res.ok) {
-        //将板块ID作为key处理
-        let sort = 0;
+        //使用lodash索引
+        //不再使用sort
+        let list = [];
         res.json.forEach(group => {
-          group.forums.forEach(item => {
-            list[item.id] = item;
-            list[item.id].sort = ++sort;
-          })
+          list += group.forums;
         });
-        //console.log(list);
         setForumList(list);
       }
       setLoading(false);
@@ -50,6 +46,7 @@ function MainPage(props) {
       <Loading />
       :
       <Router>
+        <Route path="/" exact render={()=> <Redirect to="/f/时间线" />} />
         <Route path="/:mode/:id" render={({ match, location, history }) => {
           let forumInfo = {};
           let parsed = parse(location.search);
@@ -74,8 +71,8 @@ function MainPage(props) {
           return (
             <div className="main-page">
               <LeftSideBar forumList={forumList} {...forumInfo} />
-              <MainPage forumList={forumList} {...forumInfo} />
-              <PostView forumList={forumList} {...forumInfo} />
+              {/* <ThreadView forumList={forumList} {...forumInfo} />
+              <PostView forumList={forumList} {...forumInfo} /> */}
             </div>
           )
         }} />

@@ -8,7 +8,6 @@ import { Thumb } from './Thumb';
 import '../css/PostView.scss'
 
 function PostView(props) {
-  return null;
   return (
     <div className="post-view">
       <DebugTool />

@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useReducer, useCallback } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
 import _ from 'lodash';
 import { parse } from 'query-string';
 import { getForumList, getUrl } from '../api/api';
 import { Loading } from './Loading';
 import { LeftSideBar } from './LeftSideBar';
-//import { ThreadView } from './ThreadView';
+import { ThreadView } from './ThreadView';
 //import { PostView } from './PostView';
 import '../css/MainPage.scss';
 import { ErrorPage } from './404';
 
-//const DataStore = React.createContext(null);
+const DataStore = React.createContext(null);
 
 //A岛主视图
 function MainPage(props) {
@@ -29,8 +29,7 @@ function MainPage(props) {
       if (res.ok) {
         //使用lodash索引
         //不再使用sort
-        console.log(res.json);
-        let list = _.flatMap(res.json,g => {
+        let list = _.flatMap(res.json, g => {
           return g.forums;
         });
         setForumList(list);
@@ -46,14 +45,17 @@ function MainPage(props) {
       <Loading />
       :
       <Router>
-        <Route path="/" exact render={()=> <Redirect to="/f/时间线" />} />
-        <Route path="/:mode/:id" render={ ({ match, location, history }) => {
+        <Route path="/" exact render={() => <Redirect to="/f/时间线" />} />
+        <Route path="/:mode/:id" render={({ match, location, history }) => {
           return (
-            <div className="main-page">
-              <LeftSideBar forumList={forumList} match={match} history={history} />
-              {/* <ThreadView forumList={forumList} {...forumInfo} />
-              <PostView forumList={forumList} {...forumInfo} /> */}
-            </div>
+            <DataStore.Provider value={{forumList}}>
+              <div className="main-page">
+                <LeftSideBar match={match} history={history} />
+                <ThreadView match={match} location={location} />
+                {/*<PostView {...forumInfo} /> */}
+              </div>
+            </DataStore.Provider>
+
           )
         }} />
         <Route path="/404" exact component={ErrorPage} />
@@ -62,4 +64,4 @@ function MainPage(props) {
 
   )
 }
-export { MainPage };
+export { MainPage, DataStore };

@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { withRouter, Link } from "react-router-dom";
 import _ from 'lodash';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
 import { path, getForum, getThread, getRef, getParent } from '../api/api';
+import {DataStore} from './MainPage';
 import '../css/ThreadView.scss';
 
 
@@ -11,11 +12,19 @@ var forumList = {};
 
 function ThreadView(props) {
   const [content, setContent] = useState(null);
-  const [replyCount,setReplyCount] = useState();
+  const [replyCount, setReplyCount] = useState();
+  const { match, location } = props;
+  const { mode, id } = match.params;
+  forumList = useContext(DataStore).forumList;
+
+  const params = new URLSearchParams(location);
+  let page = params.get('page');
+  if (!page) page = 1;
   useEffect(() => {
     async function fetchData() {
-      if (props.mode === 'f') {
-        let res = await getForum({ id: props.id, page: props.page });
+      if (mode === 'f') {
+        const fid = _.find(forumList,{name: id}).id;
+        const res = await getForum({ id:fid, page });
         if (res.ok) {
           //console.log(res.json);
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
@@ -24,8 +33,8 @@ function ThreadView(props) {
         }
       }
 
-      if (props.mode === 't') {
-        let res = await getThread({ id: props.id, pages: props.page });
+      if (mode === 't') {
+        const res = await getThread({ id, page });
         if (res.ok) {
           setContent(<ThreadContent content={res.json} />);
           setReplyCount(res.json.replyCount);
@@ -34,13 +43,14 @@ function ThreadView(props) {
       }
     }
     fetchData();
-  }, [props])
+  }, [mode, id])
+
   return (
     <div className="thread-view">
       <div className="thread-list">
-      {content}
+        {content}
       </div>
-      <ThreadPage {...props} replyCount />
+      <ThreadPage page replyCount />
     </div>
   );
 }
@@ -49,7 +59,6 @@ function ThreadView(props) {
 function ThreadContent(props) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [display, setDisplay] = useState('none');
-  const [moveCount,setMove] = useState(0);
   const [replyContent, setContent] = useState();
   const _style = {
     display,
@@ -59,10 +68,6 @@ function ThreadContent(props) {
     left: pos.x,
     top: pos.y,
   }
-  //控制预览显示
-  //鼠标停留预览串号显示
-  //单击串号悬停
-  const handleDisplay = useCallback(pos=>setPos(pos),[]);
   return (
     <div className="thread-content">
       <ThreadInfo content={props.content} />
@@ -75,7 +80,7 @@ function ThreadContent(props) {
           return (
             <div className="thread-reply-item" key={content.id}>
               <ThreadInfo content={content} />
-              <ThreadMain content={content} action={{ setPos, setMove, setContent }} />
+              <ThreadMain content={content} action={{ setPos, setDisplay, setContent }} />
             </div>
           )
         })}
@@ -90,33 +95,28 @@ function ThreadContent(props) {
 
 //
 function ThreadInfo(props) {
+  const ThreadNumber = withRouter(({history }) => (
+    <span
+      className="h-threads-info-id"
+      onClick={() => {
+        getParent(props.content.id).then(res => {
+          if (res.ok) history.push(`/t/${res.id}`);
+        })}}>
+      No.{props.content.id}
+    </span>
+  ));
   return (
     <div className="thread-info">
       <span className="h-threads-info-title">{props.content.title} </span>
       <span className="h-threads-info-name">{props.content.name} </span>
       <span className="h-threads-info-time">{props.content.now} </span>
       <span className={`h-threads-info-name${Number(props.content.admin) === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
-      {'fid' in props.content &&
-        <span className="h-threads-info-fid">
-          [{forumList[props.content.fid].name}]
-        </span>
-      }
-      {withRouter(<span
-        className="h-threads-info-id"
-        onClick={({ history }) => {
-          getParent(props.content.id).then(res => {
-            if (res.ok) {
-              history.push(`/t/${res.id}`);
-            }
-          })
-        }}
-      >
-        No.{props.content.id}
-      </span>
-      )}
+      {'fid' in props.content && <span className="h-threads-info-fid">[{_.find(forumList,{id:props.content.fid}).name}]</span>}
+
+      {<ThreadNumber />}
     </div>
-  )
-}
+  )}
+
 
 //正文内容
 function ThreadMain(props) {
@@ -131,12 +131,12 @@ function ThreadMain(props) {
   const transform = (node, index) => {
     if (/>>No\.\d+/.test(node.data)) {
       let rid = node.data.match(/>>No\.(\d+)/);
-      return withRouter(
+      return (
         <span
           className="reply-number"
           key={index}
           onMouseEnter={() => {
-            props.action.setMove();
+            props.action.setDisplay('block');
             getReply(rid[1]).then(component => {
               //console.log(json);
               props.action.setContent(component);
@@ -152,12 +152,12 @@ function ThreadMain(props) {
               y: e.clientY - 30
             });
           }}
-          onDoubleClick={({ history }) => {
-            getParent(props.content.id).then(res => {
+          onDoubleClick={() => {
+            /* getParent(props.content.id).then(res => {
               if (res.ok) {
-                history.push(`/t/${res.id}`);
+                dispatch({ type: 'changeThread', id: res.id });
               }
-            })
+            }) */
           }}
         >
           {rid[0]}
@@ -165,6 +165,7 @@ function ThreadMain(props) {
       )
     }
   }
+
   return (
     <div className="thread-main">
       {props.content.img !== '' &&
@@ -207,14 +208,10 @@ async function getReply(rid) {
   )
 }
 //页数控件
-function ThreadPage(props) {
-  
+function ThreadPage({page}) {
 
   return (
-    <div className="thread-page">
-      {props.page > 1 && <PageItem content="上一页" click={() => dispatch({ type: 'changePage', page: props.page - 1 })} />}
-      <PageItem content="下一页" click={() => dispatch({ type: 'changePage', page: props.page + 1 })} />
-    </div>
+    null
   )
 }
 

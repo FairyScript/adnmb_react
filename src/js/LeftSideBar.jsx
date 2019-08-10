@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import {Link} from 'react-router-dom';
+import React, { useState,useContext } from 'react';
+import {DataStore} from './MainPage';
 import '../css/LeftSideBar.scss';
 
 function LeftSideBar(props) {
@@ -11,9 +11,11 @@ function LeftSideBar(props) {
 }
 
 //板块组列表
-function ForumList({ forumList,match,history }) {
+function ForumList({ match,history }) {
+  const forumList = useContext(DataStore).forumList;
   const active = match.params.id;
 
+  //console.log(forumList);
   //空的就返回loading
   if (!forumList) {
     return <ul>forumList is Enpty</ul>

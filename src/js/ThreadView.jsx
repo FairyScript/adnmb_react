@@ -1,51 +1,58 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { path, getForum, getThread, getRef, getParent } from '../api/api';
+import { withRouter } from "react-router-dom";
+import _ from 'lodash';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
+import { path, getForum, getThread, getRef, getParent } from '../api/api';
 import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
+
 
 var forumList = {};
 
 function ThreadView(props) {
-  const forumInfo = useContext(DataStore).forumInfo;
-  forumList = props.forumList;
-  return (
-    <div className="thread-view">
-      <ThreadPage mode={forumInfo.mode} page={forumInfo.page} />
-      <ThreadList mode={forumInfo.mode} id={forumInfo.id} page={forumInfo.page} />
-    </div>
-  );
-}
-
-//正文列表
-function ThreadList(props) {
   const [content, setContent] = useState(null);
+  const [replyCount, setReplyCount] = useState();
+  const { match, location } = props;
+  const { mode, id } = match.params;
+  forumList = useContext(DataStore).forumList;
 
+  const params = new URLSearchParams(location);
+  let page = params.get('page');
+  if (!page) page = 1;
   useEffect(() => {
     async function fetchData() {
-      if (props.id === 0) return null;
-      if (props.mode === 'f') {
-        let res = await getForum({ id: props.id, page: props.page });
+      if (mode === 'f') {
+        const fid = _.find(forumList, { name: id }).id;
+        const res = await getForum({ id: fid, page });
         if (res.ok) {
           //console.log(res.json);
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
           setContent(list);
+          setReplyCount(null);
         }
       }
 
-      if (props.mode === 't') {
-        let res = await getThread({ id: props.id, pages: props.page });
+      if (mode === 't') {
+        const res = await getThread({ id, page });
         if (res.ok) {
-          setContent(<ThreadContent content={res.json} />)
+          setContent(<ThreadContent content={res.json} />);
+          setReplyCount(res.json.replyCount);
         }
         console.log('thread update');
       }
     }
     fetchData();
-  }, [props])
+  }, [mode, id, page]);
 
-  return content;
+  return (
+    <div className="thread-view">
+      <div className="thread-list">
+        {content}
+      </div>
+      <ThreadPage page replyCount />
+    </div>
+  );
 }
 
 //串内容组件
@@ -88,33 +95,30 @@ function ThreadContent(props) {
 
 //
 function ThreadInfo(props) {
-  const dispatch = useContext(DataStore).dispatch;
+  const ThreadNumber = withRouter(({ history }) => (
+    <span
+      className="h-threads-info-id"
+      onClick={() => {
+        getParent(props.content.id).then(res => {
+          if (res.ok) history.push(`/t/${res.id}`);
+        });
+      }}>
+      No.{props.content.id}
+    </span>
+  ));
   return (
     <div className="thread-info">
       <span className="h-threads-info-title">{props.content.title} </span>
       <span className="h-threads-info-name">{props.content.name} </span>
       <span className="h-threads-info-time">{props.content.now} </span>
       <span className={`h-threads-info-name${Number(props.content.admin) === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
-      {'fid' in props.content &&
-        <span className="h-threads-info-fid">
-          [{forumList[props.content.fid].name}]
-        </span>
-      }
-      <span
-        className="h-threads-info-id"
-        onClick={() => {
-          getParent(props.content.id).then(res => {
-            if (res.ok) {
-              dispatch({ type: 'changeThread', id: res.id });
-            }
-          })
-        }}
-      >
-        No.{props.content.id}
-      </span>
+      {'fid' in props.content && <span className="h-threads-info-fid">[{_.find(forumList, { id: props.content.fid }).name}]</span>}
+
+      <ThreadNumber />
     </div>
   )
 }
+
 
 //正文内容
 function ThreadMain(props) {
@@ -125,12 +129,11 @@ function ThreadMain(props) {
    * 当回应与正文之间没有分隔符时,无法正常解析
    * 有机会再修,初步想法是在他们之间插入一个空格丢回去重新parse
    */
-  const dispatch = useContext(DataStore).dispatch;
 
   const transform = (node, index) => {
     if (/>>No\.\d+/.test(node.data)) {
       let rid = node.data.match(/>>No\.(\d+)/);
-      return (
+      const ToThread = withRouter(({history}) => (
         <span
           className="reply-number"
           key={index}
@@ -153,17 +156,17 @@ function ThreadMain(props) {
           }}
           onDoubleClick={() => {
             getParent(props.content.id).then(res => {
-              if (res.ok) {
-                dispatch({ type: 'changeThread', id: res.id });
-              }
-            })
+              if (res.ok) history.push(`/t/${res.id}`);
+            });
           }}
         >
           {rid[0]}
         </span>
-      )
+      ));
+      return <ToThread />;
     }
   }
+
   return (
     <div className="thread-main">
       {props.content.img !== '' &&
@@ -191,7 +194,7 @@ async function getReply(rid) {
     const res = await getRef(rid);
     if (res.ok) {
       if (res.json === 'thread不存在') return <div>{res.json}</div>
-        json = res.json;
+      json = res.json;
     } else {
       //异常情况下需要手动构建json
       return <div>Error!</div>
@@ -206,23 +209,10 @@ async function getReply(rid) {
   )
 }
 //页数控件
-function ThreadPage(props) {
-  //页数按钮组件
-  function PageItem(props) {
-    return (
-      <button className="thread-page-button" onClick={props.click}>
-        {props.content}
-      </button>
-    )
-  }
-
-  const dispatch = useContext(DataStore).dispatch;
+function ThreadPage({ page }) {
 
   return (
-    <div className="thread-page">
-      {props.page > 1 && <PageItem content="上一页" click={() => dispatch({ type: 'changePage', page: props.page - 1 })} />}
-      <PageItem content="下一页" click={() => dispatch({ type: 'changePage', page: props.page + 1 })} />
-    </div>
+    null
   )
 }
 

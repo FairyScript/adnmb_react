@@ -106,7 +106,7 @@ function getThread(props = {id: 14500641,page: 1}) {
 //获取板块内容
 function getForum(props = {id: 4,page: 1}) {
     console.log('getForum!');
-    if(props.id === -1) {
+    if(props.id === '-1') {
         return getTimeLine({page: props.page});
     } else {
         return getContent('showf',props);

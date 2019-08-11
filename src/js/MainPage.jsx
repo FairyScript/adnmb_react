@@ -45,11 +45,12 @@ function MainPage(props) {
       :
       <Router>
         <Route path="/" exact render={() => <Redirect to="/f/时间线" />} />
-        <Route path="/:mode/:id" render={({ match, location, history }) => {
+        <Route path="/:mode/:id" render={props => {
+          const {match,location,history} = props;
           return (
-            <DataStore.Provider value={{forumList}}>
+            <DataStore.Provider value={{forumList,history}}>
               <div className="main-page">
-                <LeftSideBar match={match} history={history} />
+                <LeftSideBar match={match} />
                 <ThreadView match={match} location={location} />
                 {/*<PostView {...forumInfo} /> */}
               </div>

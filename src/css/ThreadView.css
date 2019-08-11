@@ -9,6 +9,10 @@
 .thread-content {
   background-color: #ceee9e;
   margin-bottom: 25px; }
+  .thread-content > .message-sage, .thread-content .message-delete {
+    color: red;
+    font-weight: bold;
+    font-size: 90%; }
 
 .thread-main {
   padding: 20px 0 10px 0; }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Formik, Form, Field } from 'formik';
 import Dropzone from 'react-dropzone';
-//import { useCookies } from 'react-cookie';
-//import { DataStore } from './MainPage';
+import _ from 'lodash';
+import Cookies from 'universal-cookie';
+import { DataStore } from './MainPage';
 import { postThread } from '../api/api';
 import { Thumb } from './Thumb';
 import '../css/PostView.scss'
@@ -11,8 +12,8 @@ function PostView(props) {
   return (
     <div className="post-view">
       <DebugTool />
-      <PostForm forumList={props.forumList} />
-      <div className="forum-message">这里是版规</div>
+      <PostForm {...props} />
+      {/*版规没想好，等API更新吧 */}
       <ToolBar />
     </div>
   )
@@ -22,37 +23,37 @@ function DebugTool(props) {
   return null;
 }
 
+function PostItem(props) {
+  return (
+    <div className="post-item">
+      {props.label && <label htmlFor={props.name}>{props.label}</label>}
+      <Field {...props} />
+    </div>
+  )
+}
 //发串窗,缓存也保管
-function PostForm(props) {
-  const forumInfo = useContext(DataStore).forumInfo;
-  const [postInfo, setPostInfo] = useState({ mode: null, msg: null, showId: null });
+function PostForm({match}) {
+  const {forumList,location} = useContext(DataStore);
+  const rid = new URLSearchParams(location).get('r');
+  const cookie = new Cookies();
+  const {mode,id} = match.params;
+  let postInfo = { mode: null, msg: null, id: null };
 
-  useEffect(() => {
-    //console.log(postInfo);
-    switch (forumInfo.mode) {
-      case 'f': {
-        setPostInfo({ mode: 'fid', msg: '发串模式', showId: props.forumList[forumInfo.id].name });
-        return
-      }
-      case 't': {
-        setPostInfo({ mode: 'resto', msg: '回应模式', showId: `No.${forumInfo.id}` });
-        return
-      }
+  switch (mode) {
+    case 'f': {
+      postInfo = { mode: 'fid', msg: '发串模式', id: forumList.find(e => e.name === id).id};
+      break
     }
-  }, [forumInfo]);
-
-  const PostItem = props => {
-    return (
-      <div className="post-item">
-        {props.label && <label htmlFor={props.name}>{props.label}</label>}
-        <Field {...props} />
-      </div>)
+    case 't': {
+      postInfo = { mode: 'resto', msg: '回应模式', id };
+      break
+    }
   }
 
   return (
     <Formik
       initialValues={{
-        [postInfo.mode]: forumInfo.id,
+        [postInfo.mode]: postInfo.id,
         name: undefined,
         email: undefined,
         title: undefined,
@@ -65,11 +66,10 @@ function PostForm(props) {
       isInitialValid={false}
       validate={values => {
         let errors = {};
-        if (values[postInfo.mode] === -1) {
+        if (values[postInfo.mode] === '-1') {
           errors.content = '时间线不能发串';
         }
-        if (!values.image && values.content === '') {
-          console.log('content empty');
+        if (!values.image && !values.content) {
           errors.content = '内容不能为空';
         }
         return errors;
@@ -96,14 +96,14 @@ function PostForm(props) {
     >
       {({ isSubmitting, setFieldValue, values, errors }) => (
         <Form className="post-form">
-          {`${postInfo.msg} ${postInfo.showId}`}
+          {`${postInfo.msg} ${id}`}
           <PostItem name="name" label="名称" />
           <PostItem type="email" name="email" label="E-mail" />
           <PostItem name="title" label="标题" />
           <PostItem name="content" component="textarea" placehodler={'输入正文...'/**因为版规似乎是私有的,先这样 */} label="正文" />
           {errors.content && <div id="feedback">{errors.content}</div>}
           <PostItem type="checkbox" name="water" checked={values.water} label="水印" />
-          <PostItem type="checkbox" name="isManager" checked={values.isManager} label="红名" />
+          {cookie.get('admin') && <PostItem type="checkbox" name="isManager" checked={values.isManager} label="红名" />}
           <Dropzone
             accept="image/*"
             multiple={false}

@@ -8,6 +8,12 @@
 .thread-content {
     background-color: rgb(206, 238, 158);
     margin-bottom: 25px;
+
+    >.message-sage,.message-delete {
+        color: red;
+        font-weight: bold;
+        font-size: 90%;
+    }
 }
 .thread-main {
     padding: 20px 0 10px 0;

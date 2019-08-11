@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
-import _ from 'lodash';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
 import { path, getForum, getThread, getRef, getParent } from '../api/api';
 import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
-
 
 var forumList = {};
 
@@ -22,7 +20,7 @@ function ThreadView(props) {
   useEffect(() => {
     async function fetchData() {
       if (mode === 'f') {
-        const fid = _.find(forumList, { name: id }).id;
+        const fid = forumList.find(e => e.name === id).id;
         const res = await getForum({ id: fid, page });
         if (res.ok) {
           //console.log(res.json);
@@ -99,7 +97,7 @@ function ThreadInfo(props) {
       <span className="h-threads-info-name">{props.content.name} </span>
       <span className="h-threads-info-time">{props.content.now} </span>
       <span className={`h-threads-info-name${Number(props.content.admin) === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
-      {'fid' in props.content && <span className="h-threads-info-fid">[{_.find(forumList, { id: props.content.fid }).name}]</span>}
+      {'fid' in props.content && <span className="h-threads-info-fid">[{forumList.find(e => e.id === props.content.fid).id.name}]</span>}
       <span
         className="h-threads-info-id"
         onClick={() => {

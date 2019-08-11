@@ -2,7 +2,7 @@
  * 
  */
 
-import {htmlparser2} from 'react-html-parser';
+import {Parser} from 'htmlparser2';
 
 const path = {
     pathname: 'https://adnmb2.com/',
@@ -128,7 +128,7 @@ async function getParent(id = 14500641) {
         if(res.ok) {
             const text = await res.text();
             let parent;
-            const parser = new htmlparser2.Parser({
+            const parser = new Parser({
                 onopentag: function(name, attribs){
                     if(name === "a" && attribs.class === "h-threads-info-id"){
                         parent = attribs.href.match(/\/t\/(\d+)\?/)[1];

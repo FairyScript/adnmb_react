@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
-import _ from 'lodash';
 import { getForumList } from '../api/api';
 import { Loading } from './Loading';
 import { LeftSideBar } from './LeftSideBar';
 import { ThreadView } from './ThreadView';
-//import { PostView } from './PostView';
+import { PostView } from './PostView';
 import '../css/MainPage.scss';
 import { ErrorPage } from './404';
+const flatMap = require('lodash/flatMap');
 
 const DataStore = React.createContext(null);
 
@@ -28,7 +28,7 @@ function MainPage(props) {
       if (res.ok) {
         //使用lodash索引
         //不再使用sort
-        let list = _.flatMap(res.json, g => {
+        let list = flatMap(res.json, g => {
           return g.forums;
         });
         setForumList(list);
@@ -48,11 +48,11 @@ function MainPage(props) {
         <Route path="/:mode/:id" render={props => {
           const {match,location,history} = props;
           return (
-            <DataStore.Provider value={{forumList,history}}>
+            <DataStore.Provider value={{forumList,history,location}}>
               <div className="main-page">
                 <LeftSideBar match={match} />
                 <ThreadView match={match} location={location} />
-                {/*<PostView {...forumInfo} /> */}
+                <PostView match={match} />
               </div>
             </DataStore.Provider>
 

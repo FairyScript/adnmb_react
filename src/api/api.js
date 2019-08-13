@@ -154,6 +154,7 @@ async function getParent(id = 14500641) {
  * @returns {String} id: 串号
  * @returns {String} r: 回应串号
  * @returns {Number} page: 页数
+ * 旧API，已弃用
  */
 function getUrl() {
     let url = window.location;
@@ -188,4 +189,4 @@ function getUrl() {
     }
     return e;
 }
-export {path,getForumList,getTimeLine,getForum,getThread,getRef,getParent,getUrl,postThread}
+export {path,getForumList,getTimeLine,getForum,getThread,getRef,getParent,postThread}

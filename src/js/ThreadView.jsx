@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import Zmage from 'react-zmage';
 import ReactHtmlParser from 'react-html-parser';
 import { path, getForum, getThread, getRef, getParent } from '../api/api';
@@ -14,14 +14,14 @@ function ThreadView(props) {
   const { mode, id } = match.params;
   forumList = useContext(DataStore).forumList;
 
-  const params = new URLSearchParams(location);
+  const params = new URLSearchParams(location.search);
   let page = params.get('page');
-  if (!page) page = 1;
+  if (!page) page = '1';
   useEffect(() => {
     async function fetchData() {
       if (mode === 'f') {
         const fid = forumList.find(e => e.name === id).id;
-        const res = await getForum({ id: fid, page });
+        const res = await getForum(fid,page);
         if (res.ok) {
           //console.log(res.json);
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
@@ -31,7 +31,7 @@ function ThreadView(props) {
       }
 
       if (mode === 't') {
-        const res = await getThread({ id, page });
+        const res = await getThread(id, page);
         if (res.ok) {
           setContent(<ThreadContent content={res.json} />);
           setReplyCount(res.json.replyCount);
@@ -40,14 +40,14 @@ function ThreadView(props) {
       }
     }
     fetchData();
-  }, [mode, id, page]);
+  }, [props]);
 
   return (
     <div className="thread-view">
+      <ThreadPage page={page} replyCount={replyCount} />
       <div className="thread-list">
         {content}
       </div>
-      <ThreadPage page={page} replyCount={replyCount} />
     </div>
   );
 }
@@ -97,7 +97,7 @@ function ThreadInfo(props) {
       <span className="h-threads-info-name">{props.content.name} </span>
       <span className="h-threads-info-time">{props.content.now} </span>
       <span className={`h-threads-info-name${Number(props.content.admin) === 1 ? ' admin-name' : ''}`}>{props.content.userid}</span>
-      {'fid' in props.content && <span className="h-threads-info-fid">[{forumList.find(e => e.id === props.content.fid).id.name}]</span>}
+      {'fid' in props.content && <span className="h-threads-info-fid">[{forumList.find(e => e.id === props.content.fid).name}]</span>}
       <span
         className="h-threads-info-id"
         onClick={() => {
@@ -123,7 +123,7 @@ function ThreadMain(props) {
    */
   const history = useContext(DataStore).history;
 
-  const transform = (node, index) => {
+  const transform = useCallback((node, index) => {
     if (/>>No\.\d+/.test(node.data)) {
       let rid = node.data.match(/>>No\.(\d+)/);
       return (
@@ -131,7 +131,7 @@ function ThreadMain(props) {
           key={index}
           className="reply-number"
           onMouseEnter={() => {
-            console.log('Mouse Enter');
+            //console.log('Mouse Enter');
             props.action.setDisplay(true);
             getReply(rid[1]).then(component => {
               //console.log(json);
@@ -139,7 +139,7 @@ function ThreadMain(props) {
             });
           }}
           onMouseLeave={() => {
-            console.log('Mouse Leave');
+            //console.log('Mouse Leave');
             props.action.setDisplay(null);
             props.action.setContent(null);//清空state
           }}
@@ -159,7 +159,7 @@ function ThreadMain(props) {
         </span>
       )
     }
-  }
+  },[])
 
   return (
     <div className="thread-main">
@@ -204,9 +204,12 @@ async function getReply(rid) {
 }
 //页数控件
 function ThreadPage({ page }) {
-
+  const {history} = useContext(DataStore);
   return (
-    null
+    <>
+    {page !== '1' && <button onClick={() => history.push({search: `?page=${Number(page)-1}`})}>上一页</button>}
+    <button onClick={() => history.push({search: `?page=${Number(page)+1}`})}>下一页</button>
+    </>
   )
 }
 

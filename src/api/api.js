@@ -2,7 +2,7 @@
  * 
  */
 
-import {Parser} from 'htmlparser2';
+import { Parser } from 'htmlparser2';
 
 const path = {
     pathname: 'https://adnmb2.com/',
@@ -14,7 +14,7 @@ const path = {
 };
 const config = {
     cache: 'no-cache',
-    headers: {"user-agent": "HavefunClient-Dawn"},
+    headers: { "user-agent": "HavefunClient-Dawn" },
     method: 'GET',
     mode: 'cors'
 }
@@ -27,27 +27,38 @@ const config = {
  * @returns {Boolean} ok 请求是否成功
  * @returns {Object} json 返回体，json格式
  */
-async function getContent(type='ref',props) {
+async function getContent(type = 'ref', props) {
     let url = path.apiPath + type;
-    if(!(props === undefined)) {
+    if (!(props === undefined)) {
         let params = new URLSearchParams(props);
         url += '?' + params.toString();
     }
-    console.log('url:'+url);
-    try {
-        let res = await fetch(url,config);
-        if(res.ok) {
-            console.log('getContent! '+url);
-            let json = await res.json();
-            return {ok: true,json: json};
-        } else {
-            throw new Error(res);
-        }
-    } catch (res) {
-        console.log(res);
-        return {ok: false,status: res.status};
+    console.log('url:' + url);
+    let res = await fetch(url, config);
+    if (res.ok) {
+        console.log('getContent! ' + url);
+        let json = await res.json();
+        return { ok: true, json: json };
+    } else {
+        return { ok: false, status: res.status };
     }
-    
+
+
+}
+
+//解析返回的Http数据
+function parseResponseHttp(http) {
+    let result = /<p class="(.+)">(.+)<\/p>/.exec(http);
+    console.log(result);
+    switch (result[1]) {
+        case 'success': {
+            return { ok: true, message: result[2] };
+        }
+        case 'error': {
+            return { ok: false, message: result[2] };
+        }
+        default: return { ok: true, message: `未确定的result:${result}` };
+    }
 }
 
 //发串
@@ -56,94 +67,93 @@ async function postThread(formData) {
     let url = path.postPath;
     let config = {
         cache: 'no-cache',
-        headers: {"user-agent": "HavefunClient-Dawn"},
+        headers: { "user-agent": "HavefunClient-Dawn" },
         method: 'POST',
         body: formData,
         mode: 'no-cors',
         credentials: "include"
     }
-    try {
-        let res = await fetch(url,config);
-        if(res.ok) {
-            let text = await res.text();
-            console.log(text);
-            //检测返回是否成功
-            let result = /<p class="(.+)">(.+)<\/p>/.exec(text);
-            console.log(result);
-            switch (result[1]) {
-                case 'success': {
-                    return {ok: true,message: result[2]};
-                }
-                case 'error': {
-                    throw new Error(result[2]);
-                }
-                default: throw new Error(`未确定的result:${result}`);
-            }
-        } else {
-            throw new Error('post失败!');
-        }
-    } catch (error) {
-        //console.log(error);
-        return {ok: false,message: error};
+    let res = await fetch(url, config);
+    if (res.ok) {
+        /* let text = await res.text();
+        console.log(text); */
+        //检测返回是否成功
+        return parseResponseHttp(await res.text());
+    } else {
+        console.log(res);
+        throw new Error('post失败!');
     }
+
 }
+
 //获取板块列表
 function getForumList() {
     return getContent('getForumList')
 }
 
-//获取时间线
-function getTimeLine(props={page: 1}) {
-    return getContent('timeline',props)
+/**
+ * 获取时间线
+ * @param {String} page 页数
+ */
+function getTimeLine(page = '1') {
+    return getContent('timeline', { page })
 }
 
-//获取串内容
-function getThread(props = {id: 14500641,page: 1}) {
+/**
+ * 获取串内容
+ * @param {String} id 串ID
+ * @param {String} page 页数
+ */
+function getThread(id = '14500641', page = '1') {
     console.log('getThread!');
-    return getContent('thread',props);
+    return getContent('thread', { id, page });
 }
 
-//获取板块内容
-function getForum(props = {id: 4,page: 1}) {
+/**
+ * 获取板块内容
+ * @param {String} id 串ID
+ * @param {String} page 页数
+ */
+function getForum(id = '4', page = '1') {
     console.log('getForum!');
-    if(props.id === '-1') {
-        return getTimeLine({page: props.page});
+    if (id === '-1') {
+        return getTimeLine(page);
     } else {
-        return getContent('showf',props);
+        return getContent('showf', { id, page });
     }
 }
 
 //获取*单个*串内容
-function getRef(id = 14500641) {
+function getRef(id = '14500641') {
     console.log('getRef!');
-    return getContent('ref',{id});
+    return getContent('ref', { id });
 }
 
 //获取父串
-async function getParent(id = 14500641) {
+async function getParent(id = '14500641') {
     const url = `${path.managePath}ref?id=${id}`;
     console.log(url);
     try {
-        const res = await fetch(url,config);
-        if(res.ok) {
+        const res = await fetch(url, config);
+        if (res.ok) {
             const text = await res.text();
             let parent;
             const parser = new Parser({
-                onopentag: function(name, attribs){
-                    if(name === "a" && attribs.class === "h-threads-info-id"){
+                onopentag: function (name, attribs) {
+                    if (name === "a" && attribs.class === "h-threads-info-id") {
                         parent = attribs.href.match(/\/t\/(\d+)\?/)[1];
                     }
                 }
-            }, {decodeEntities: true});
+            }, { decodeEntities: true });
             parser.write(text);
             parser.end();
-            return {ok: true, id: parent};
+            return { ok: true, id: parent };
         } else {
             throw new Error(res);
         }
     } catch (res) {
         console.log(res);
-        return{ok: false, status: res.status};
+        return { ok: false, status: res.status };
     }
 }
 
@@ -161,7 +171,7 @@ function getUrl() {
     let e = {};
 
     //判断是否有pathname
-    if(url.pathname === '/') {
+    if (url.pathname === '/') {
         e = {
             viewmode: 'f',
             id: '时间线',
@@ -178,15 +188,15 @@ function getUrl() {
         alert('串号解析失败！');
         console.log(error);
     }
-    
+
     //解析search
     let s = new URLSearchParams(url.search).entries();
     while (true) {
         let t = s.next();
         //console.log(t);
-        if(t.done) break;
+        if (t.done) break;
         e[t.value[0]] = t.value[1];
     }
     return e;
 }
-export {path,getForumList,getTimeLine,getForum,getThread,getRef,getParent,postThread}
+export { path, getForumList, getTimeLine, getForum, getThread, getRef, getParent, postThread }

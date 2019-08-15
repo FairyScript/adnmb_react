@@ -1,44 +1,63 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Formik, Form, Field } from 'formik';
-import Dropzone from 'react-dropzone';
-import _ from 'lodash';
-import Cookies from 'universal-cookie';
+import React, { useContext,useCallback,useState } from 'react';
+//import { Formik, Form, Field } from 'formik';
+import { useForm, useField } from "react-final-form-hooks";
+import { useDropzone } from 'react-dropzone';
 import { DataStore } from './MainPage';
-import { postThread } from '../api/api';
 import { Thumb } from './Thumb';
 import '../css/PostView.scss'
 
-function PostView(props) {
+function PostView({match}) {
   return (
     <div className="post-view">
       <DebugTool />
-      <PostForm {...props} />
+      <PostForm key={match.params.id} {...match.params} />
       {/*版规没想好，等API更新吧 */}
       <ToolBar />
     </div>
   )
 }
 
-function DebugTool(props) {
+function DebugTool() {
   return null;
 }
 
-function PostItem(props) {
-  return (
-    <div className="post-item">
-      {props.label && <label htmlFor={props.name}>{props.label}</label>}
-      <Field {...props} />
-    </div>
-  )
-}
-//发串窗,缓存也保管
-function PostForm({match}) {
-  const {forumList,location} = useContext(DataStore);
-  const rid = new URLSearchParams(location).get('r');
-  const cookie = new Cookies();
-  const {mode,id} = match.params;
-  let postInfo = { mode: null, msg: null, id: null };
+//form
+function PostForm({mode,id}) {
+  //Callback提交函数
+  const onSubmit = useCallback(async values => {
+    let formData = new FormData();
+        for (let key in values) {
+          if (values[key]) formData.append(key, values[key]);
+        }
+    console.log(values);
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: [${pair[1]}]`);
+    }
+    /* postThread(formData).then(res => {
+          if(res.ok) {
+            console.log('发串成功!');
+          } else {
+            console.error(res.message);
+          }
+        }); */
+  },[]);
+  const validate = useCallback(values => {
+    const errors = {}
+    if(values.fid  === '-1') {
+      errors.content = '时间线不可以';
+    }
 
+    return errors
+  },[]);
+
+  //Hooks
+  //FinalForm使用了订阅机制
+  //除手动输入之外的，需要用hook保持和赋值
+  const [image,setImage] = useState(null);
+  const {forumList} = useContext(DataStore);
+
+  //构造resto/fid
+  let postInfo = {};
   switch (mode) {
     case 'f': {
       postInfo = { mode: 'fid', msg: '发串模式', id: forumList.find(e => e.name === id).id};
@@ -50,91 +69,89 @@ function PostForm({match}) {
     }
   }
 
+  //FinalForm
+  const { form, handleSubmit, values, pristine, submitting } = useForm({
+    initialValues: {
+      [postInfo.mode]: postInfo.id,
+      water: true,
+      admin: false
+    },
+    onSubmit,
+    validate
+  });
+  const name = useField('name', form);
+  const email = useField('email', form);
+  const title = useField('title', form);
+  const content = useField('content', form);
+  const water = useField('water', form);
+  const admin = useField('isManager', form);
+
+  //DropZone
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: 'image/*',
+    multiple: false,
+    noKeyboard: true,
+    noClick: true,
+    onDropAccepted: files => setImage(files[0])
+  });
+
+  if(image) values.image = image;
   return (
-    <Formik
-      initialValues={{
-        [postInfo.mode]: postInfo.id,
-        name: undefined,
-        email: undefined,
-        title: undefined,
-        content: undefined,
-        image: null,
-        water: true,
-        isManager: false
-      }}
-      enableReinitialize={true}
-      isInitialValid={false}
-      validate={values => {
-        let errors = {};
-        if (values[postInfo.mode] === '-1') {
-          errors.content = '时间线不能发串';
-        }
-        if (!values.image && !values.content) {
-          errors.content = '内容不能为空';
-        }
-        return errors;
-      }}
-      onSubmit={(values, { setSubmitting }) => {
-        let formData = new FormData();
-        for (let key in values) {
-          if (values[key]) formData.append(key, values[key]);
-        }
+    <>
+      <form onSubmit={handleSubmit} {...getRootProps()}>
+        <input {...getInputProps()} />{/**图片组件 */}
+        <div>
+          {postInfo.msg}: {id}
+        </div>
+        <div>
+          <label>名称</label>
+          <input {...name.input} placeholder="名称" />
+        </div>
+        <div>
+          <label>E-mail</label>
+          <input {...email.input} placeholder="E-mail" />
+        </div>
+        <div>
+          <label>标题</label>
+          <input {...title.input} placeholder="标题" />
+          <div className="h-tool">
+            <input type="checkbox" id={admin.input.name} checked={admin.input.value} {...admin.input} />
+            <label htmlFor="isManager">管理员</label>
+          </div>
+        </div>
+        <div>
+          <label>正文</label>
+          <textarea {...content.input} placeholder="请输入正文..." />
+          {content.meta.touched && content.meta.error && <span>{content.meta.error}</span>}
+        </div>
+        <div>
+          <label htmlFor="water">水印</label>
+          <input type="checkbox" id={water.input.name} checked={water.input.value} {...water.input} />
+        </div>
 
-        console.log(values);
-        for (let pair of formData.entries()) {
-          console.log(`${pair[0]}: [${pair[1]}]`);
-        }
-        /* postThread(formData).then(res => {
-          if(res.ok) {
-            console.log('发串成功!');
-          } else {
-            console.error(res.message);
-          }
-        }); */
-        setTimeout(setSubmitting(false), 1000);
-      }}
-    >
-      {({ isSubmitting, setFieldValue, values, errors }) => (
-        <Form className="post-form">
-          {`${postInfo.msg} ${id}`}
-          <PostItem name="name" label="名称" />
-          <PostItem type="email" name="email" label="E-mail" />
-          <PostItem name="title" label="标题" />
-          <PostItem name="content" component="textarea" placehodler={'输入正文...'/**因为版规似乎是私有的,先这样 */} label="正文" />
-          {errors.content && <div id="feedback">{errors.content}</div>}
-          <PostItem type="checkbox" name="water" checked={values.water} label="水印" />
-          {cookie.get('admin') && <PostItem type="checkbox" name="isManager" checked={values.isManager} label="红名" />}
-          <Dropzone
-            accept="image/*"
-            multiple={false}
-            noKeyboard={true}
-            onDropAccepted={files => {
-              //console.log(files);
-              setFieldValue('image', files[0])
+        {values.image && <Thumb file={values.image} />}
+        <pre>{JSON.stringify(values, 0, 2)}</pre>
+
+        <div className="buttons">
+          <button type="submit" disabled={submitting || (!values.content && !values.image)}> Submit </button>
+          <button
+            type="button"
+            onClick={()=>{
+              form.reset();
+              setImage(null);//手动清空了image，因为没有对应的组件无法正确reset
             }}
+            disabled={submitting || pristine}
           >
-            {({ getRootProps, getInputProps }) => (
-              <section>
-                <div {...getRootProps()}>
-                  <input {...getInputProps()} />
-                  <p>Drag 'n' drop some files here, or click to select files</p>
-                </div>
-              </section>
-            )}
-          </Dropzone>
-          {values.image && <Thumb file={values.image} />}
-          <button type="submit" disabled={isSubmitting}>
-            提交
-          </button>
-        </Form>
-      )
+            Reset
+              </button>
+        </div>
+      </form>
 
-      }
-    </Formik>
+    </>
   )
 }
 
-function ToolBar(props) {
+function ToolBar() {
   return null;
 }
 

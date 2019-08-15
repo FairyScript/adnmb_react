@@ -11,8 +11,8 @@ function LeftSideBar(props) {
 }
 
 //板块组列表
-function ForumList({ match,history }) {
-  const forumList = useContext(DataStore).forumList;
+function ForumList({ match }) {
+  const {forumList,history} = useContext(DataStore);
   const active = match.params.id;
 
   //console.log(forumList);

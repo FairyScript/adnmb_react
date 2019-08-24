@@ -4,4 +4,46 @@
   left: 70vw;
   width: 25vw;
   height: 30wh;
-  background-color: plum; }
+  background-color: white; }
+
+#post-form .post-item {
+  margin: 1em;
+  display: flex;
+  align-items: center; }
+
+#post-form label {
+  width: 5em; }
+
+#post-form textarea,
+#post-form input[type=text],
+#post-form button {
+  width: 100%;
+  border-radius: 2px;
+  border: 1px solid #C9C9C9; }
+  #post-form textarea:hover,
+  #post-form input[type=text]:hover,
+  #post-form button:hover {
+    border-color: #009688;
+    color: #333; }
+
+#post-form input[type=text] {
+  height: 2em; }
+
+#post-form textarea {
+  min-height: 90px;
+  resize: vertical; }
+
+#post-form .buttons {
+  justify-content: flex-end; }
+
+#post-form button {
+  height: 36px;
+  width: 70px;
+  margin: 0 5px;
+  background-color: #fff;
+  color: #555;
+  font-size: 14px; }
+  #post-form button:disabled {
+    border: 1px solid #999999;
+    background-color: #cccccc;
+    color: #666666; }

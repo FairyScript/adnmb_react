@@ -19,6 +19,7 @@ function ThreadView(props) {
   if (!page) page = '1';
   useEffect(() => {
     async function fetchData() {
+      //console.log('Thread View Update!');
       if (mode === 'f') {
         const fid = forumList.find(e => e.name === id).id;
         const res = await getForum(fid,page);
@@ -36,8 +37,8 @@ function ThreadView(props) {
           setContent(<ThreadContent content={res.json} />);
           setReplyCount(res.json.replyCount);
         }
-        console.log('thread update');
       }
+      window.scrollTo(0, 0);
     }
     fetchData();
   }, [props]);

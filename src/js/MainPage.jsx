@@ -48,7 +48,7 @@ function MainPage(props) {
         <Route path="/:mode/:id" render={props => {
           const {match,location,history} = props;
           return (
-            <DataStore.Provider value={{forumList,history,location}}>
+            <DataStore.Provider value={{forumList,history}}>
               <div className="main-page">
                 <LeftSideBar match={match} />
                 <ThreadView match={match} location={location} />

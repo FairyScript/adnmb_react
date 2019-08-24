@@ -9,7 +9,6 @@
 
 import React from 'react';
 import { MainPage } from './js/MainPage';
-import {PostView} from './js/PostView';
 
 function App() {
   return (

@@ -22,7 +22,7 @@ function ThreadView(props) {
       //console.log('Thread View Update!');
       if (mode === 'f') {
         const fid = forumList.find(e => e.name === id).id;
-        const res = await getForum(fid,page);
+        const res = await getForum(fid, page);
         if (res.ok) {
           //console.log(res.json);
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
@@ -45,7 +45,7 @@ function ThreadView(props) {
 
   return (
     <div className="thread-view">
-      <ThreadPage page={page} replyCount={replyCount} />
+      <ThreadPage page={Number(page)} replyCount={replyCount} />
       <div className="thread-list">
         {content}
       </div>
@@ -60,8 +60,10 @@ function ThreadContent(props) {
   const [replyContent, setContent] = useState();
   const _style = {
     position: 'fixed',
-    minWidth: 100,
+    minWidth: '10vw',
+    maxWidth: '50vw',
     minHeight: 50,
+    'z-index': 2,
     left: pos.x,
     top: pos.y,
   }
@@ -160,7 +162,7 @@ function ThreadMain(props) {
         </span>
       )
     }
-  },[])
+  }, [])
 
   return (
     <div className="thread-main">
@@ -204,13 +206,68 @@ async function getReply(rid) {
   )
 }
 //页数控件
-function ThreadPage({ page }) {
-  const {history} = useContext(DataStore);
+function ThreadPage({ page, replyCount }) {
+  const { history } = useContext(DataStore);
+
+  if (replyCount) {
+    const pageCount = Math.ceil(replyCount / 20);
+    const minPage = Math.max(page - 5, 1);
+    const maxPage = Math.min(page + 5, pageCount);
+
+    let pageItems = [];
+
+    for (let i = minPage; i <= maxPage; i++) {
+      pageItems.push(
+        <button
+          key={i}
+          className={`page-item ${page == i ? 'active-page' : ''}`}
+          disabled={page == i}
+          onClick={() => history.push({ search: `?page=${i}` })}>
+          {i}
+        </button>
+      );
+    }
+
+    return (
+      <div className="thread-page">
+        {minPage !== 1 &&
+          <button
+            onClick={() => history.push({ search: `?page=1` })}>
+            回到首页
+          </button>
+        }
+        <button
+          disabled={page == 1}
+          onClick={() => history.push({ search: `?page=${page - 1}` })}>
+          上一页
+        </button>
+        {pageItems}
+        <button
+          disabled={pageCount == page}
+          onClick={() => history.push({ search: `?page=${page + 1}` })}>
+          下一页
+        </button>
+        {maxPage !== pageCount &&
+          <button
+            onClick={() => history.push({ search: `?page=${pageCount}` })}>
+            尾页
+          </button>
+        }
+      </div>)
+  }
+
   return (
-    <>
-    {page !== '1' && <button onClick={() => history.push({search: `?page=${Number(page)-1}`})}>上一页</button>}
-    <button onClick={() => history.push({search: `?page=${Number(page)+1}`})}>下一页</button>
-    </>
+    <div className="thread-page">
+      <button
+        disabled={page == 1}
+        onClick={() => history.push({ search: `?page=${Number(page) - 1}` })}>
+        上一页
+      </button>
+      <button
+        onClick={() => history.push({ search: `?page=${Number(page) + 1}` })}>
+        下一页
+      </button>
+    </div>
   )
 }
 

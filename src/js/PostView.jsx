@@ -4,7 +4,7 @@ import { useForm, useField } from "react-final-form-hooks";
 import { useDropzone } from 'react-dropzone';
 import Cookies from 'universal-cookie';
 import { DataStore } from './MainPage';
-import {postThread} from '../api/api';
+import { postThread } from '../api/api';
 import { Thumb } from './Thumb';
 import '../css/PostView.scss'
 
@@ -46,7 +46,7 @@ function PostForm({ mode, id }) {
       } else {
         console.error(res.message);
       }
-      history.replace(history.location.pathname+history.location.search);
+      history.replace(history.location.pathname + history.location.search);
     });
 
   }, []);
@@ -127,9 +127,8 @@ function PostForm({ mode, id }) {
         <div className="post-item">
           <label>正文</label>
           <textarea {...content.input} placeholder="请输入正文..." />
-          {content.meta.touched && content.meta.error && <span>{content.meta.error}</span>}
         </div>
-
+        {content.meta.touched && content.meta.error && <span>{content.meta.error}</span>}
         <div className="post-item checkboxs">
           <div>
             <label htmlFor="water">水印</label>

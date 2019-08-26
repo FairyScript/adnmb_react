@@ -3,10 +3,13 @@ import React, { useContext, useCallback, useState } from 'react';
 import { useForm, useField } from "react-final-form-hooks";
 import { useDropzone } from 'react-dropzone';
 import Cookies from 'universal-cookie';
+import Select from 'react-select';
 import { DataStore } from './MainPage';
 import { postThread } from '../api/api';
 import { Thumb } from './Thumb';
 import '../css/PostView.scss'
+
+const cookies = new Cookies();
 
 function PostView({ match }) {
   return (
@@ -27,7 +30,6 @@ function DebugTool() {
 function PostForm({ mode, id }) {
   const history = useContext(DataStore).history;
 
-  const cookies = new Cookies();
   //Callback提交函数
   const onSubmit = useCallback(async values => {
     //构造formData
@@ -48,14 +50,13 @@ function PostForm({ mode, id }) {
       }
       history.replace(history.location.pathname + history.location.search);
     });
-
   }, []);
+
   const validate = useCallback(values => {
     const errors = {}
     if (values.fid === '-1') {
       errors.content = '时间线不可以';
     }
-
     return errors
   }, []);
 
@@ -104,11 +105,14 @@ function PostForm({ mode, id }) {
     onDropAccepted: files => setImage(files[0])
   });
 
+  //将state的图片添加到values,注意这种方式无法被form.reset()清除
+  //故已知bug 只添加图片没有正文的话,无法触发pristine属性
   if (image) values.image = image;
+
   return (
     <>
       <form id="post-form" onSubmit={handleSubmit} {...getRootProps()}>
-        <input {...getInputProps()} />{/**图片组件 */}
+        <input {...getInputProps()} />{/** DropZone 图片组件 */}
         <div className="post-info">
           {postInfo.msg}: {id}
         </div>
@@ -158,13 +162,43 @@ function PostForm({ mode, id }) {
       </form>
 
       {values.image && <Thumb file={values.image} />}
-      <pre>{JSON.stringify(values, 0, 2)}</pre>
+      {/* <pre>{JSON.stringify(values, 0, 2)}</pre> */}
     </>
   )
 }
 
+/**
+ * 工具栏
+ * - 饼干选择器
+ */
 function ToolBar() {
-  return null;
+  //Cookie Switch
+  const [activeCookie,setActiveCookie] = useState(cookies.get('userhash'));
+  const handleChange = useCallback(selectedOption => {
+    //setActiveCookie()
+    //cookies.set('userhash',selectedOption.value);
+    console.log('Select Cookie:', selectedOption);
+  }, []);
+
+  const storage = window.localStorage;
+  let cookieJar = [];
+  if (!storage.cookie){
+    cookieJar = [{ value: activeCookie, label: '当前饼干' }];
+    storage.cookie = JSON.stringify(cookieJar);
+  } else {
+    cookieJar = JSON.parse(storage.cookie);
+  };
+  
+  return (
+    <div className="tool-bar">
+      <Select
+        className="cookie-select"
+        defaultValue={cookieJar.find(e => e.value === activeCookie)}
+        onChange={handleChange}
+        options={cookieJar}
+      />
+    </div>
+  );
 }
 
 export { PostView };

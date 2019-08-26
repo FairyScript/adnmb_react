@@ -7,7 +7,6 @@ import { ThreadView } from './ThreadView';
 import { PostView } from './PostView';
 import '../css/MainPage.scss';
 import { ErrorPage } from './404';
-const flatMap = require('lodash/flatMap');
 
 const DataStore = React.createContext(null);
 
@@ -25,14 +24,7 @@ function MainPage(props) {
       //暂且放弃了ForumGroup的使用
       //因为之后会增加自定义板块的功能
       let res = await getForumList();
-      if (res.ok) {
-        //使用lodash索引
-        //不再使用sort
-        let list = flatMap(res.json, g => {
-          return g.forums;
-        });
-        setForumList(list);
-      }
+      if (res.ok) setForumList(res.json.flatMap(e => e.forums));
       setLoading(false);
       //对于传入URL，无法正确解析所对应的板块
     }

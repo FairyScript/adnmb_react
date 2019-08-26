@@ -8,7 +8,9 @@
 
 .thread-content {
   background-color: #ceee9e;
-  margin-bottom: 25px; }
+  margin-bottom: 25px;
+  position: relative;
+  overflow-y: auto; }
   .thread-content > .message-sage, .thread-content .message-delete {
     color: red;
     font-weight: bold;

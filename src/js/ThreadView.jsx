@@ -46,9 +46,8 @@ function ThreadView(props) {
   return (
     <div className="thread-view">
       <ThreadPage page={Number(page)} replyCount={replyCount} />
-      <div className="thread-list">
-        {content}
-      </div>
+      <div className="thread-list">{content}</div>
+      <ThreadPage page={Number(page)} replyCount={replyCount} />
     </div>
   );
 }
@@ -61,9 +60,9 @@ function ThreadContent(props) {
   const _style = {
     position: 'fixed',
     minWidth: '10vw',
-    maxWidth: '50vw',
+    maxWidth: '40vw',
     minHeight: 50,
-    'z-index': 2,
+    zIndex: 1,
     left: pos.x,
     top: pos.y,
   }
@@ -205,6 +204,7 @@ async function getReply(rid) {
     </>
   )
 }
+
 //页数控件
 function ThreadPage({ page, replyCount }) {
   const { history } = useContext(DataStore);
@@ -220,8 +220,8 @@ function ThreadPage({ page, replyCount }) {
       pageItems.push(
         <button
           key={i}
-          className={`page-item ${page == i ? 'active-page' : ''}`}
-          disabled={page == i}
+          className={`page-item ${page === i ? 'active-page' : ''}`}
+          disabled={page === i}
           onClick={() => history.push({ search: `?page=${i}` })}>
           {i}
         </button>
@@ -237,13 +237,13 @@ function ThreadPage({ page, replyCount }) {
           </button>
         }
         <button
-          disabled={page == 1}
+          disabled={page === 1}
           onClick={() => history.push({ search: `?page=${page - 1}` })}>
           上一页
         </button>
         {pageItems}
         <button
-          disabled={pageCount == page}
+          disabled={pageCount === page}
           onClick={() => history.push({ search: `?page=${page + 1}` })}>
           下一页
         </button>
@@ -259,7 +259,7 @@ function ThreadPage({ page, replyCount }) {
   return (
     <div className="thread-page">
       <button
-        disabled={page == 1}
+        disabled={page === 1}
         onClick={() => history.push({ search: `?page=${Number(page) - 1}` })}>
         上一页
       </button>

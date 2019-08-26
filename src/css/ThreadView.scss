@@ -8,7 +8,8 @@
 .thread-content {
     background-color: rgb(206, 238, 158);
     margin-bottom: 25px;
-
+    position: relative;
+    overflow-y: auto;
     >.message-sage,.message-delete {
         color: red;
         font-weight: bold;
@@ -66,4 +67,5 @@
 
 .thread-page {
     display: flex;
+
 }

@@ -29,13 +29,16 @@ function ForumList({ match }) {
       key={item.id}
       className={item.name === active ? "active-forum forum-item" : "forum-item"}
       onClick={() => {
+        window.scrollTo(0, 0);
         history.push(`/f/${item.name}`);
       }}
       //解析板块名称，时间线特殊解析
       dangerouslySetInnerHTML={{ __html: (item.showName === '' || item.name === '时间线') ? item.name : item.showName }}
     />)
   });
-  return <ul className="forum-group">{c}</ul>
+  return (
+    <ul className="forum-group">{c}</ul>
+    )
 }
 
 export { LeftSideBar };

@@ -5,7 +5,77 @@
     width: 25vw;
     height: 30wh;
     //max-width: 350px;;
+    padding: 10px;
+    border-radius: 3px;
+    
+    background-color: white;
 
-    background-color: plum;
+}
 
+#post-form {
+    .post-item {
+        margin: 1em;
+        display: flex;
+        align-items: center;
+    }
+
+    label {
+        width: 5em;
+    }
+
+    textarea,
+    input[type=text],
+    button {
+        width: 100%;
+        border-radius: 2px;
+        border: 1px solid #C9C9C9;
+        transition: border-color .3s;
+        &:hover {
+            border-color: #009688;
+            color: #333
+        }
+    }
+
+    input[type=text] {
+        height: 2em;
+    }
+
+    textarea {
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    .buttons {
+        justify-content: flex-end;
+    }
+
+    button {
+        height: 36px;
+        width: 70px;
+        margin: 0 5px;
+        background-color: #fff;
+        color: #555;
+        font-size: 14px;
+
+        &:disabled {
+            border: 1px solid #999999;
+            background-color: #cccccc;
+            color: #666666;
+        }
+    }
+}
+
+.cookie-switch {
+    margin: 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    label {
+        width: 5em;
+    }
+
+    .cookie-select {
+        width: 100%;
+    }
 }

@@ -19,14 +19,16 @@ function ThreadView(props) {
   if (!page) page = '1';
   useEffect(() => {
     async function fetchData() {
+      //console.log('Thread View Update!');
       if (mode === 'f') {
         const fid = forumList.find(e => e.name === id).id;
-        const res = await getForum(fid,page);
+        const res = await getForum(fid, page);
         if (res.ok) {
           //console.log(res.json);
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
           setContent(list);
           setReplyCount(null);
+          document.title = `${id} - A岛黎明 adnmb.com` ;
         }
       }
 
@@ -35,19 +37,18 @@ function ThreadView(props) {
         if (res.ok) {
           setContent(<ThreadContent content={res.json} />);
           setReplyCount(res.json.replyCount);
+          document.title = `No.${id} - A岛黎明 adnmb.com` ;
         }
-        console.log('thread update');
       }
+      window.scrollTo(0, 0);
     }
     fetchData();
   }, [props]);
 
   return (
     <div className="thread-view">
-      <ThreadPage page={page} replyCount={replyCount} />
-      <div className="thread-list">
-        {content}
-      </div>
+      <ThreadPage page={Number(page)} replyCount={replyCount} />
+      <div className="thread-list">{content}</div>
     </div>
   );
 }
@@ -59,8 +60,10 @@ function ThreadContent(props) {
   const [replyContent, setContent] = useState();
   const _style = {
     position: 'fixed',
-    minWidth: 100,
+    minWidth: '10vw',
+    maxWidth: '40vw',
     minHeight: 50,
+    zIndex: 1,
     left: pos.x,
     top: pos.y,
   }
@@ -150,7 +153,7 @@ function ThreadMain(props) {
             });
           }}
           onDoubleClick={() => {
-            getParent(props.content.id).then(res => {
+            getParent(rid[1]).then(res => {
               if (res.ok) history.push(`/t/${res.id}`);
             });
           }}
@@ -159,7 +162,7 @@ function ThreadMain(props) {
         </span>
       )
     }
-  },[])
+  }, [])
 
   return (
     <div className="thread-main">
@@ -202,14 +205,70 @@ async function getReply(rid) {
     </>
   )
 }
+
 //页数控件
-function ThreadPage({ page }) {
-  const {history} = useContext(DataStore);
+function ThreadPage({ page, replyCount }) {
+  const { history } = useContext(DataStore);
+
+  if (replyCount) {
+    const pageCount = Math.ceil(replyCount / 20);
+    const minPage = Math.max(page - 5, 1);
+    const maxPage = Math.min(page + 5, pageCount);
+
+    let pageItems = [];
+
+    for (let i = minPage; i <= maxPage; i++) {
+      pageItems.push(
+        <button
+          key={i}
+          className={`page-item ${page === i ? 'active-page' : ''}`}
+          disabled={page === i}
+          onClick={() => history.push({ search: `?page=${i}` })}>
+          {i}
+        </button>
+      );
+    }
+
+    return (
+      <div className="thread-page">
+        {minPage !== 1 &&
+          <button
+            onClick={() => history.push({ search: `?page=1` })}>
+            回到首页
+          </button>
+        }
+        <button
+          disabled={page === 1}
+          onClick={() => history.push({ search: `?page=${page - 1}` })}>
+          上一页
+        </button>
+        {pageItems}
+        <button
+          disabled={pageCount === page}
+          onClick={() => history.push({ search: `?page=${page + 1}` })}>
+          下一页
+        </button>
+        {maxPage !== pageCount &&
+          <button
+            onClick={() => history.push({ search: `?page=${pageCount}` })}>
+            尾页
+          </button>
+        }
+      </div>)
+  }
+
   return (
-    <>
-    {page !== '1' && <button onClick={() => history.push({search: `?page=${Number(page)-1}`})}>上一页</button>}
-    <button onClick={() => history.push({search: `?page=${Number(page)+1}`})}>下一页</button>
-    </>
+    <div className="thread-page">
+      <button
+        disabled={page === 1}
+        onClick={() => history.push({ search: `?page=${Number(page) - 1}` })}>
+        上一页
+      </button>
+      <button
+        onClick={() => history.push({ search: `?page=${Number(page) + 1}` })}>
+        下一页
+      </button>
+    </div>
   )
 }
 

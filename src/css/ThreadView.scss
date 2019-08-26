@@ -7,8 +7,13 @@
 }
 .thread-content {
     background-color: rgb(206, 238, 158);
+    padding: 0 1em;
+    padding-top: 1em;
     margin-bottom: 25px;
-
+    border-radius: 3px;
+    box-shadow: 10px 7px 10px rgba(128, 128, 128,.5);
+    position: relative;
+    overflow-y: auto;
     >.message-sage,.message-delete {
         color: red;
         font-weight: bold;
@@ -16,7 +21,7 @@
     }
 }
 .thread-main {
-    padding: 20px 0 10px 0;
+    padding: 0 1em 1em 1em;
 }
 .thread-replys {
     background-color: aquamarine;
@@ -28,6 +33,7 @@
     :last-child {border-bottom: none;}
 }
 .thread-info {
+    padding-bottom: 1em;
     >span {
         margin: 0 3px 0 3px;
     }
@@ -62,4 +68,15 @@
 .thread-preview {
     background: lightblue;
     border-radius: 5px;
+}
+
+.thread-page {
+    position: fixed;
+    display: flex;
+    top: 5vh;
+    right: 30.5%;
+    z-index: 1;
+    flex-direction: column;
+    justify-content: center;
+
 }

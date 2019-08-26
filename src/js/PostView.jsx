@@ -1,12 +1,17 @@
-import React, { useContext,useCallback,useState } from 'react';
+import React, { useContext, useCallback, useState } from 'react';
 //import { Formik, Form, Field } from 'formik';
 import { useForm, useField } from "react-final-form-hooks";
 import { useDropzone } from 'react-dropzone';
+import Cookies from 'universal-cookie';
+import Select from 'react-select';
 import { DataStore } from './MainPage';
+import { postThread } from '../api/api';
 import { Thumb } from './Thumb';
 import '../css/PostView.scss'
 
-function PostView({match}) {
+const cookies = new Cookies();
+
+function PostView({ match }) {
   return (
     <div className="post-view">
       <DebugTool />
@@ -22,45 +27,50 @@ function DebugTool() {
 }
 
 //form
-function PostForm({mode,id}) {
+function PostForm({ mode, id }) {
+  const history = useContext(DataStore).history;
+
   //Callback提交函数
   const onSubmit = useCallback(async values => {
+    //构造formData
     let formData = new FormData();
-        for (let key in values) {
-          if (values[key]) formData.append(key, values[key]);
-        }
-    console.log(values);
+    for (let key in values) {
+      if (values[key]) formData.append(key, values[key]);
+    }
+    //console.log(values);
     for (let pair of formData.entries()) {
       console.log(`${pair[0]}: [${pair[1]}]`);
     }
-    /* postThread(formData).then(res => {
-          if(res.ok) {
-            console.log('发串成功!');
-          } else {
-            console.error(res.message);
-          }
-        }); */
-  },[]);
+    postThread(formData).then(res => {
+      if (res.ok) {
+        console.log('发串成功!');
+        form.reset();
+      } else {
+        console.error(res.message);
+      }
+      history.replace(history.location.pathname + history.location.search);
+    });
+  }, []);
+
   const validate = useCallback(values => {
     const errors = {}
-    if(values.fid  === '-1') {
+    if (values.fid === '-1') {
       errors.content = '时间线不可以';
     }
-
     return errors
-  },[]);
+  }, []);
 
   //Hooks
   //FinalForm使用了订阅机制
   //除手动输入之外的，需要用hook保持和赋值
-  const [image,setImage] = useState(null);
-  const {forumList} = useContext(DataStore);
+  const [image, setImage] = useState(null);
+  const { forumList } = useContext(DataStore);
 
   //构造resto/fid
   let postInfo = {};
   switch (mode) {
     case 'f': {
-      postInfo = { mode: 'fid', msg: '发串模式', id: forumList.find(e => e.name === id).id};
+      postInfo = { mode: 'fid', msg: '发串模式', id: forumList.find(e => e.name === id).id };
       break
     }
     case 't': {
@@ -95,64 +105,106 @@ function PostForm({mode,id}) {
     onDropAccepted: files => setImage(files[0])
   });
 
-  if(image) values.image = image;
+  //将state的图片添加到values,注意这种方式无法被form.reset()清除
+  //故已知bug 只添加图片没有正文的话,无法触发pristine属性
+  if (image) values.image = image;
+
   return (
     <>
-      <form onSubmit={handleSubmit} {...getRootProps()}>
-        <input {...getInputProps()} />{/**图片组件 */}
-        <div>
+      <form id="post-form" onSubmit={handleSubmit} {...getRootProps()}>
+        <input {...getInputProps()} />{/** DropZone 图片组件 */}
+        <div className="post-info">
           {postInfo.msg}: {id}
         </div>
-        <div>
+        <div className="post-item">
           <label>名称</label>
-          <input {...name.input} placeholder="名称" />
+          <input type="text" {...name.input} placeholder="名称" />
         </div>
-        <div>
+        <div className="post-item">
           <label>E-mail</label>
-          <input {...email.input} placeholder="E-mail" />
+          <input type="text" {...email.input} placeholder="E-mail" />
         </div>
-        <div>
+        <div className="post-item">
           <label>标题</label>
-          <input {...title.input} placeholder="标题" />
-          <div className="h-tool">
-            <input type="checkbox" id={admin.input.name} checked={admin.input.value} {...admin.input} />
-            <label htmlFor="isManager">管理员</label>
-          </div>
+          <input type="text" {...title.input} placeholder="标题" />
         </div>
-        <div>
+        <div className="post-item">
           <label>正文</label>
           <textarea {...content.input} placeholder="请输入正文..." />
-          {content.meta.touched && content.meta.error && <span>{content.meta.error}</span>}
         </div>
-        <div>
-          <label htmlFor="water">水印</label>
-          <input type="checkbox" id={water.input.name} checked={water.input.value} {...water.input} />
+        {content.meta.touched && content.meta.error && <span>{content.meta.error}</span>}
+        <div className="post-item checkboxs">
+          <div>
+            <label htmlFor="water">水印</label>
+            <input type="checkbox" id={water.input.name} checked={water.input.value} {...water.input} />
+          </div>
+          {cookies.get('admin') && //红名检测,更加建议用classname方式
+            <div className="h-tool">
+              <label htmlFor="isManager">管理员</label>
+              <input type="checkbox" id={admin.input.name} checked={admin.input.value} {...admin.input} />
+            </div>}
         </div>
 
-        {values.image && <Thumb file={values.image} />}
-        <pre>{JSON.stringify(values, 0, 2)}</pre>
-
-        <div className="buttons">
-          <button type="submit" disabled={submitting || (!values.content && !values.image)}> Submit </button>
+        <div className="post-item buttons">
+          <button type="submit" disabled={submitting || (!values.content && !values.image)}> 发串 </button>
           <button
             type="button"
-            onClick={()=>{
+            onClick={() => {
               form.reset();
               setImage(null);//手动清空了image，因为没有对应的组件无法正确reset
             }}
             disabled={submitting || pristine}
           >
-            Reset
-              </button>
+            清空
+          </button>
         </div>
+
       </form>
 
+      {values.image && <Thumb file={values.image} />}
+      {/* <pre>{JSON.stringify(values, 0, 2)}</pre> */}
     </>
   )
 }
 
+/**
+ * 工具栏
+ * - 饼干选择器
+ */
 function ToolBar() {
-  return null;
+  //Cookie Switch
+  const [activeCookie, setActiveCookie] = useState(cookies.get('userhash'));
+  const handleChange = useCallback(({ value }) => {
+    setActiveCookie(value)
+    cookies.set('userhash', value);
+    console.log('Select Cookie:', value);
+  }, []);
+
+  const storage = window.localStorage;
+  let cookieJar = [];
+  if (storage.cookie) {
+    cookieJar = JSON.parse(storage.cookie)
+  } else if (activeCookie) {
+    cookieJar = [{ label: '当前饼干', value: activeCookie }];
+    storage.cookie = JSON.stringify(cookieJar);
+  };
+
+  return (
+    <div className="tool-bar">
+      <div className="cookie-switch">
+        <label>饼干</label>
+        <Select
+          className="cookie-select"
+          defaultValue={cookieJar.find(e => e.value === activeCookie)}
+          isDisabled={!activeCookie}
+          onChange={handleChange}
+          options={cookieJar}
+        />
+        <button className="get-cookie">获取饼干</button>
+      </div>
+
+    </div>
+  );
 }
 
 export { PostView };

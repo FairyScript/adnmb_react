@@ -1,3 +1,9 @@
+html {
+  background-color: #fff; }
+
+body {
+  background-color: #ccc; }
+
 .main-page {
   padding-top: 5vh;
   height: 100%; }

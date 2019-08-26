@@ -4,6 +4,8 @@
   left: 70vw;
   width: 25vw;
   height: 30wh;
+  padding: 10px;
+  border-radius: 3px;
   background-color: white; }
 
 #post-form .post-item {
@@ -19,7 +21,8 @@
 #post-form button {
   width: 100%;
   border-radius: 2px;
-  border: 1px solid #C9C9C9; }
+  border: 1px solid #C9C9C9;
+  transition: border-color .3s; }
   #post-form textarea:hover,
   #post-form input[type=text]:hover,
   #post-form button:hover {
@@ -47,3 +50,13 @@
     border: 1px solid #999999;
     background-color: #cccccc;
     color: #666666; }
+
+.cookie-switch {
+  margin: 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: center; }
+  .cookie-switch label {
+    width: 5em; }
+  .cookie-switch .cookie-select {
+    width: 100%; }

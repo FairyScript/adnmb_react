@@ -28,6 +28,7 @@ function ThreadView(props) {
           const list = res.json.map(content => <ThreadContent key={content.id} content={content} />)
           setContent(list);
           setReplyCount(null);
+          document.title = `${id} - A岛黎明 adnmb.com` ;
         }
       }
 
@@ -36,6 +37,7 @@ function ThreadView(props) {
         if (res.ok) {
           setContent(<ThreadContent content={res.json} />);
           setReplyCount(res.json.replyCount);
+          document.title = `No.${id} - A岛黎明 adnmb.com` ;
         }
       }
       window.scrollTo(0, 0);
@@ -47,7 +49,6 @@ function ThreadView(props) {
     <div className="thread-view">
       <ThreadPage page={Number(page)} replyCount={replyCount} />
       <div className="thread-list">{content}</div>
-      <ThreadPage page={Number(page)} replyCount={replyCount} />
     </div>
   );
 }
@@ -152,7 +153,7 @@ function ThreadMain(props) {
             });
           }}
           onDoubleClick={() => {
-            getParent(props.content.id).then(res => {
+            getParent(rid[1]).then(res => {
               if (res.ok) history.push(`/t/${res.id}`);
             });
           }}

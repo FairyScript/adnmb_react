@@ -173,30 +173,36 @@ function PostForm({ mode, id }) {
  */
 function ToolBar() {
   //Cookie Switch
-  const [activeCookie,setActiveCookie] = useState(cookies.get('userhash'));
-  const handleChange = useCallback(selectedOption => {
-    //setActiveCookie()
-    //cookies.set('userhash',selectedOption.value);
-    console.log('Select Cookie:', selectedOption);
+  const [activeCookie, setActiveCookie] = useState(cookies.get('userhash'));
+  const handleChange = useCallback(({ value }) => {
+    setActiveCookie(value)
+    cookies.set('userhash', value);
+    console.log('Select Cookie:', value);
   }, []);
 
   const storage = window.localStorage;
   let cookieJar = [];
-  if (!storage.cookie){
-    cookieJar = [{ value: activeCookie, label: '当前饼干' }];
+  if (storage.cookie) {
+    cookieJar = JSON.parse(storage.cookie)
+  } else if (activeCookie) {
+    cookieJar = [{ label: '当前饼干', value: activeCookie }];
     storage.cookie = JSON.stringify(cookieJar);
-  } else {
-    cookieJar = JSON.parse(storage.cookie);
   };
-  
+
   return (
     <div className="tool-bar">
-      <Select
-        className="cookie-select"
-        defaultValue={cookieJar.find(e => e.value === activeCookie)}
-        onChange={handleChange}
-        options={cookieJar}
-      />
+      <div className="cookie-switch">
+        <label>饼干</label>
+        <Select
+          className="cookie-select"
+          defaultValue={cookieJar.find(e => e.value === activeCookie)}
+          isDisabled={!activeCookie}
+          onChange={handleChange}
+          options={cookieJar}
+        />
+        <button className="get-cookie">获取饼干</button>
+      </div>
+
     </div>
   );
 }

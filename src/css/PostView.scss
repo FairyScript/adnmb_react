@@ -5,7 +5,9 @@
     width: 25vw;
     height: 30wh;
     //max-width: 350px;;
-
+    padding: 10px;
+    border-radius: 3px;
+    
     background-color: white;
 
 }
@@ -27,7 +29,7 @@
         width: 100%;
         border-radius: 2px;
         border: 1px solid #C9C9C9;
-
+        transition: border-color .3s;
         &:hover {
             border-color: #009688;
             color: #333
@@ -60,5 +62,20 @@
             background-color: #cccccc;
             color: #666666;
         }
+    }
+}
+
+.cookie-switch {
+    margin: 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    label {
+        width: 5em;
+    }
+
+    .cookie-select {
+        width: 100%;
     }
 }

@@ -36,7 +36,9 @@ function ForumList({ match }) {
       dangerouslySetInnerHTML={{ __html: (item.showName === '' || item.name === '时间线') ? item.name : item.showName }}
     />)
   });
-  return <ul className="forum-group">{c}</ul>
+  return (
+    <ul className="forum-group">{c}</ul>
+    )
 }
 
 export { LeftSideBar };

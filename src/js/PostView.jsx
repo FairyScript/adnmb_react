@@ -27,6 +27,19 @@ function DebugTool() {
 
 function PostForm({ mode, id }) {
   const { forumList, history } = useContext(DataStore);
+
+  //构造resto/fid
+  let postInfo = {};
+  switch (mode) {
+    case 'f': {
+      postInfo = { mode: 'fid', msg: '发串模式', id: forumList.find(e => e.name === id).id };
+      break
+    }
+    case 't': {
+      postInfo = { mode: 'resto', msg: '回应模式', id };
+      break
+    }
+  }
   //Form
   const initState = {
     [postInfo.mode]: postInfo.id,
@@ -34,7 +47,7 @@ function PostForm({ mode, id }) {
     admin: false
   };
 
-  const [formState, { text, email, textarea, select, label }] = useFormState(initState, {
+  const [formState, { text, email, textarea, checkbox, label, raw }] = useFormState(initState, {
     withIds: true
   });
 
@@ -77,23 +90,11 @@ function PostForm({ mode, id }) {
     return errors
   }, []);
 
-  //构造resto/fid
-  let postInfo = {};
-  switch (mode) {
-    case 'f': {
-      postInfo = { mode: 'fid', msg: '发串模式', id: forumList.find(e => e.name === id).id };
-      break
-    }
-    case 't': {
-      postInfo = { mode: 'resto', msg: '回应模式', id };
-      break
-    }
-  }
 
   return (
     <div id="post-form" {...getRootProps()}>
       <input {...getInputProps()} />{/** DropZone 图片组件 */}
-
+      <input {...raw(postInfo.mode)} type="hidden" />
       <div className="post-item">
         <label {...label('name')}>名称</label>
         <input {...text('name')} />
@@ -111,12 +112,24 @@ function PostForm({ mode, id }) {
 
       <div className="post-item">
         <label {...label('content')}>正文</label>
-        <input {...textarea('content')} />
+        <input {...textarea({
+          name: 'content',
+          validate: (value, values) => {
+            if (values.fid === '-1') return '时间线不可以';
+            if (!value && !values.image) return '必须填写正文';
+          }
+        })} />
       </div>
-
-      <button onClick={formState.reset} />
+      <div>
+        <label {...label('water')}>水印</label>
+        <input {...checkbox('water')} />
+        <label {...label('isManager')}>红名</label>
+        <input {...checkbox('isManager')} />
+      </div>
+      <button onClick={formState.reset} >清空</button>
+      <button onClick={() => onSubmit(formState.values)} >发送</button>
       {formState.values.image && <Thumb file={formState.values.image} />}
-      {<pre>{JSON.stringify(formState.values, 0, 2)}</pre>}
+      {<pre>{JSON.stringify(formState, 0, 2)}</pre>}
     </div>
   )
 

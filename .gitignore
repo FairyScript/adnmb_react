@@ -7,7 +7,7 @@
 
 # testing
 /coverage
-/js/test/*
+/src/js/test/*
 # production
 /build
 

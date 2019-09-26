@@ -5,14 +5,13 @@ import { path, getForum, getThread, getRef, getParent } from '../api/api';
 import { DataStore } from './MainPage';
 import '../css/ThreadView.scss';
 
-var forumList = {};
 
 function ThreadView(props) {
   const [content, setContent] = useState(null);
   const [replyCount, setReplyCount] = useState();
   const { match, location } = props;
   const { mode, id } = match.params;
-  forumList = useContext(DataStore).forumList;
+  const {forumList,setActiveForum} = useContext(DataStore);
 
   const params = new URLSearchParams(location.search);
   let page = params.get('page');
@@ -21,6 +20,7 @@ function ThreadView(props) {
     async function fetchData() {
       //console.log('Thread View Update!');
       if (mode === 'f') {
+        setActiveForum(id);
         const fid = forumList.find(e => e.name === id).id;
         const res = await getForum(fid, page);
         if (res.ok) {
@@ -33,8 +33,10 @@ function ThreadView(props) {
       }
 
       if (mode === 't') {
+        
         const res = await getThread(id, page);
         if (res.ok) {
+          setActiveForum(forumList.find(e => e.id === res.json.fid).name);
           setContent(<ThreadContent content={res.json} />);
           setReplyCount(res.json.replyCount);
           document.title = `No.${id} - A岛黎明 adnmb.com` ;
@@ -93,7 +95,7 @@ function ThreadContent(props) {
 
 //
 function ThreadInfo(props) {
-  const history = useContext(DataStore).history;
+  const {forumList,history} = useContext(DataStore);
   return (
     <div className="thread-info">
       <span className="h-threads-info-title">{props.content.title} </span>

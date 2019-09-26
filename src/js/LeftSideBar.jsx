@@ -12,8 +12,7 @@ function LeftSideBar(props) {
 
 //板块组列表
 function ForumList({ match }) {
-  const {forumList,history} = useContext(DataStore);
-  const active = match.params.id;
+  const {forumList,history,activeForum} = useContext(DataStore);
 
   //console.log(forumList);
   //空的就返回loading
@@ -27,7 +26,7 @@ function ForumList({ match }) {
     return (
     <li
       key={item.id}
-      className={item.name === active ? "active-forum forum-item" : "forum-item"}
+      className={item.name === activeForum ? "active-forum forum-item" : "forum-item"}
       onClick={() => {
         window.scrollTo(0, 0);
         history.push(`/f/${item.name}`);

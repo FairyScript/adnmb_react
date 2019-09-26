@@ -12,22 +12,27 @@ const path = {
     postPath: '/Home/Forum/doReplyThread.html',
     testPath: '/'
 };
-const config = {
+const config: RequestInit = {
     cache: 'no-cache',
     headers: { "user-agent": "HavefunClient-Dawn" },
     method: 'GET',
     mode: 'cors'
 }
 
+interface ContentReturn {
+    ok: boolean,
+    json?: object,
+    status?: any
+}
 /**
  * 构造fetch获取内容
  * @param {String} type API类型 
- * @param {Object} header Header参数
+ * @param {Object} props Header参数
  * 
  * @returns {Boolean} ok 请求是否成功
  * @returns {Object} json 返回体，json格式
  */
-async function getContent(type = 'ref', props) {
+async function getContent(type: string = 'ref', props?: any): Promise<ContentReturn> {
     let url = path.apiPath + type;
     if (!(props === undefined)) {
         let params = new URLSearchParams(props);
@@ -47,9 +52,10 @@ async function getContent(type = 'ref', props) {
 }
 
 //解析返回的Http数据
-function parseResponseHttp(http) {
+function parseResponseHttp(http: string) {
     let result = /<p class="(.+)">(.+)<\/p>/.exec(http);
     console.log(result);
+    if(!result) return { ok: false, message: '解析失败！' };
     switch (result[1]) {
         case 'success': {
             return { ok: true, message: result[2] };
@@ -63,9 +69,9 @@ function parseResponseHttp(http) {
 
 //发串
 //发串是否成功的逻辑应在这里实现
-async function postThread(formData) {
+async function postThread(formData: FormData) {
     let url = path.postPath;
-    let config = {
+    let config: RequestInit = {
         cache: 'no-cache',
         headers: { "user-agent": "HavefunClient-Dawn" },
         method: 'POST',
@@ -95,7 +101,7 @@ function getForumList() {
  * 获取时间线
  * @param {String} page 页数
  */
-function getTimeLine(page = '1') {
+function getTimeLine(page: string = '1') {
     return getContent('timeline', { page })
 }
 
@@ -104,7 +110,7 @@ function getTimeLine(page = '1') {
  * @param {String} id 串ID
  * @param {String} page 页数
  */
-function getThread(id = '14500641', page = '1') {
+function getThread(id: string = '14500641', page: string = '1') {
     console.log('getThread!');
     return getContent('thread', { id, page });
 }
@@ -114,7 +120,7 @@ function getThread(id = '14500641', page = '1') {
  * @param {String} id 串ID
  * @param {String} page 页数
  */
-function getForum(id = '4', page = '1') {
+function getForum(id: string = '4', page: string = '1') {
     console.log('getForum!');
     if (id === '-1') {
         return getTimeLine(page);
@@ -124,7 +130,7 @@ function getForum(id = '4', page = '1') {
 }
 
 //获取*单个*串内容
-function getRef(id = '14500641') {
+function getRef(id: string = '14500641') {
     console.log('getRef!');
     return getContent('ref', { id });
 }
@@ -133,70 +139,23 @@ function getRef(id = '14500641') {
 async function getParent(id = '14500641') {
     const url = `${path.managePath}ref?id=${id}`;
     console.log(url);
-    try {
-        const res = await fetch(url, config);
+    const res = await fetch(url, config);
         if (res.ok) {
             const text = await res.text();
             let parent;
             const parser = new Parser({
                 onopentag: function (name, attribs) {
                     if (name === "a" && attribs.class === "h-threads-info-id") {
-                        parent = attribs.href.match(/\/t\/(\d+)\?/)[1];
+                        let result = attribs.href.match(/\/t\/(\d+)\?/);
+                        if(!result) return { ok: false, id: -1 }
+                        parent = result[1]
                     }
                 }
             }, { decodeEntities: true });
             parser.write(text);
             parser.end();
             return { ok: true, id: parent };
-        } else {
-            throw new Error(res);
-        }
-    } catch (res) {
-        console.log(res);
-        return { ok: false, status: res.status };
     }
 }
 
-/**URL解析
- * 形如：/t/18097095?r=18107967&page=2
- * URL可能含有的参数
- * @returns {String} viewmode 访问模式 f,t,admin(这个暂时不好用)
- * @returns {String} id: 串号
- * @returns {String} r: 回应串号
- * @returns {Number} page: 页数
- * 旧API，已弃用
- */
-function getUrl() {
-    let url = window.location;
-    let e = {};
-
-    //判断是否有pathname
-    if (url.pathname === '/') {
-        e = {
-            viewmode: 'f',
-            id: '时间线',
-            page: 1
-        }
-        return e;
-    }
-    //解析串号
-    try {
-        let parser = /\/(.+)\/(.*)/.exec(url.pathname);
-        e.viewmode = parser[1];
-        e.id = decodeURI(parser[2]);
-    } catch (error) {
-        alert('串号解析失败！');
-        console.log(error);
-    }
-
-    //解析search
-    let s = new URLSearchParams(url.search).entries();
-    while (true) {
-        let t = s.next();
-        //console.log(t);
-        if (t.done) break;
-        e[t.value[0]] = t.value[1];
-    }
-    return e;
-}
 export { path, getForumList, getTimeLine, getForum, getThread, getRef, getParent, postThread }

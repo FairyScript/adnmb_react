@@ -1,6 +1,5 @@
 import React, { useContext, useCallback, useState } from 'react';
-//import { Formik, Form, Field } from 'formik';
-import { useForm, useField } from "react-final-form-hooks";
+import { useFormState } from 'react-use-form-state';
 import { useDropzone } from 'react-dropzone';
 import Cookies from 'universal-cookie';
 import Select from 'react-select';
@@ -26,30 +25,48 @@ function DebugTool() {
   return null;
 }
 
-//form
 function PostForm({ mode, id }) {
-  const history = useContext(DataStore).history;
+  const { forumList, history } = useContext(DataStore);
+  //Form
+  const initState = {
+    [postInfo.mode]: postInfo.id,
+    water: true,
+    admin: false
+  };
+
+  const [formState, { text, email, textarea, select, label }] = useFormState(initState, {
+    withIds: true
+  });
+
+  //DropZone
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: 'image/*',
+    multiple: false,
+    noKeyboard: true,
+    noClick: true,
+    onDropAccepted: files => formState.setField('image', files[0])
+  });
 
   //Callback提交函数
   const onSubmit = useCallback(async values => {
     //构造formData
     let formData = new FormData();
     for (let key in values) {
-      if (values[key]) formData.append(key, values[key]);
+      values[key] && formData.append(key, values[key]);
     }
     //console.log(values);
     for (let pair of formData.entries()) {
       console.log(`${pair[0]}: [${pair[1]}]`);
     }
-    postThread(formData).then(res => {
+    /* postThread(formData).then(res => {
       if (res.ok) {
         console.log('发串成功!');
-        form.reset();
+        //form.reset();
       } else {
         console.error(res.message);
       }
       history.replace(history.location.pathname + history.location.search);
-    });
+    }); */
   }, []);
 
   const validate = useCallback(values => {
@@ -59,12 +76,6 @@ function PostForm({ mode, id }) {
     }
     return errors
   }, []);
-
-  //Hooks
-  //FinalForm使用了订阅机制
-  //除手动输入之外的，需要用hook保持和赋值
-  const [image, setImage] = useState(null);
-  const { forumList } = useContext(DataStore);
 
   //构造resto/fid
   let postInfo = {};
@@ -79,92 +90,36 @@ function PostForm({ mode, id }) {
     }
   }
 
-  //FinalForm
-  const { form, handleSubmit, values, pristine, submitting } = useForm({
-    initialValues: {
-      [postInfo.mode]: postInfo.id,
-      water: true,
-      admin: false
-    },
-    onSubmit,
-    validate
-  });
-  const name = useField('name', form);
-  const email = useField('email', form);
-  const title = useField('title', form);
-  const content = useField('content', form);
-  const water = useField('water', form);
-  const admin = useField('isManager', form);
-
-  //DropZone
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: 'image/*',
-    multiple: false,
-    noKeyboard: true,
-    noClick: true,
-    onDropAccepted: files => setImage(files[0])
-  });
-
-  //将state的图片添加到values,注意这种方式无法被form.reset()清除
-  //故已知bug 只添加图片没有正文的话,无法触发pristine属性
-  if (image) values.image = image;
-
   return (
-    <>
-      <form id="post-form" onSubmit={handleSubmit} {...getRootProps()}>
-        <input {...getInputProps()} />{/** DropZone 图片组件 */}
-        <div className="post-info">
-          {postInfo.msg}: {id}
-        </div>
-        <div className="post-item">
-          <label>名称</label>
-          <input type="text" {...name.input} placeholder="名称" />
-        </div>
-        <div className="post-item">
-          <label>E-mail</label>
-          <input type="text" {...email.input} placeholder="E-mail" />
-        </div>
-        <div className="post-item">
-          <label>标题</label>
-          <input type="text" {...title.input} placeholder="标题" />
-        </div>
-        <div className="post-item">
-          <label>正文</label>
-          <textarea {...content.input} placeholder="请输入正文..." />
-        </div>
-        {content.meta.touched && content.meta.error && <span>{content.meta.error}</span>}
-        <div className="post-item checkboxs">
-          <div>
-            <label htmlFor="water">水印</label>
-            <input type="checkbox" id={water.input.name} checked={water.input.value} {...water.input} />
-          </div>
-          {cookies.get('admin') && //红名检测,更加建议用classname方式
-            <div className="h-tool">
-              <label htmlFor="isManager">管理员</label>
-              <input type="checkbox" id={admin.input.name} checked={admin.input.value} {...admin.input} />
-            </div>}
-        </div>
+    <div id="post-form" {...getRootProps()}>
+      <input {...getInputProps()} />{/** DropZone 图片组件 */}
 
-        <div className="post-item buttons">
-          <button type="submit" disabled={submitting || (!values.content && !values.image)}> 发串 </button>
-          <button
-            type="button"
-            onClick={() => {
-              form.reset();
-              setImage(null);//手动清空了image，因为没有对应的组件无法正确reset
-            }}
-            disabled={submitting || pristine}
-          >
-            清空
-          </button>
-        </div>
+      <div className="post-item">
+        <label {...label('name')}>名称</label>
+        <input {...text('name')} />
+      </div>
 
-      </form>
+      <div className="post-item">
+        <label {...email('email')}>E-mail</label>
+        <input {...text('email')} />
+      </div>
 
-      {values.image && <Thumb file={values.image} />}
-      {/* <pre>{JSON.stringify(values, 0, 2)}</pre> */}
-    </>
+      <div className="post-item">
+        <label {...label('title')}>标题</label>
+        <input {...text('title')} />
+      </div>
+
+      <div className="post-item">
+        <label {...label('content')}>正文</label>
+        <input {...textarea('content')} />
+      </div>
+
+      <button onClick={formState.reset} />
+      {formState.values.image && <Thumb file={formState.values.image} />}
+      {<pre>{JSON.stringify(formState.values, 0, 2)}</pre>}
+    </div>
   )
+
 }
 
 /**

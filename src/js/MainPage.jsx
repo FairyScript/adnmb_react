@@ -16,7 +16,7 @@ function MainPage(props) {
   //Hook
   const [forumList, setForumList] = useState();
   const [loading, setLoading] = useState(true);
-
+  const [activeForum,setActiveForum] = useState();
   //init
   useEffect(() => {
     async function fetchData() {
@@ -40,9 +40,9 @@ function MainPage(props) {
         <Route path="/:mode/:id" render={props => {
           const {match,location,history} = props;
           return (
-            <DataStore.Provider value={{forumList,history}}>
+            <DataStore.Provider value={{forumList,history,activeForum,setActiveForum}}>
               <div className="main-page">
-                <LeftSideBar match={match} />
+                <LeftSideBar />
                 <ThreadView match={match} location={location} />
                 <PostView match={match} />
               </div>

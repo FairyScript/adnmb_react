@@ -123,8 +123,12 @@ function PostForm({ mode, id }) {
       <div>
         <label {...label('water')}>水印</label>
         <input {...checkbox('water')} />
-        <label {...label('isManager')}>红名</label>
-        <input {...checkbox('isManager')} />
+        {cookies.get('admin') && //红名检测,更加建议用classname方式
+          <>
+          <label {...label('isManager')}>红名</label>
+          <input {...checkbox('isManager')} />
+          </>
+        }
       </div>
       <button onClick={formState.reset} >清空</button>
       <button onClick={() => onSubmit(formState.values)} >发送</button>

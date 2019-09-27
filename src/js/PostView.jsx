@@ -11,23 +11,9 @@ import '../css/PostView.scss'
 const cookies = new Cookies();
 
 function PostView({ match }) {
-  return (
-    <div className="post-view">
-      <DebugTool />
-      <PostForm key={match.params.id} {...match.params} />
-      {/*版规没想好，等API更新吧 */}
-      <ToolBar />
-    </div>
-  )
-}
-
-function DebugTool() {
-  return null;
-}
-
-function PostForm({ mode, id }) {
+  const {mode,id} = match.params;
   const { forumList, history } = useContext(DataStore);
-
+  const reFresh = () => history.replace(history.location.pathname + history.location.search);
   //构造resto/fid
   let postInfo = {};
   switch (mode) {
@@ -36,11 +22,27 @@ function PostForm({ mode, id }) {
       break
     }
     case 't': {
-      postInfo = { mode: 'resto', msg: '回应模式', id };
+      postInfo = { mode: 'resto', msg: '回应模式', id: id };
       break
     }
+    default: postInfo = {mode: 'error', msg: '未知的mode'}
   }
-  //Form
+  return (
+    <div className="post-view">
+      <DebugTool />
+      <ToolBar />
+      {postInfo.mode !== 'error' && postInfo.id !== '-1' && <PostForm key={match.params.id} postInfo={postInfo} reFresh={reFresh} />}
+      {/*版规没想好，等API更新吧 */}
+    </div>
+  )
+}
+
+function DebugTool() {
+  return null;
+}
+
+function PostForm({postInfo,reFresh}) {
+
   const initState = {
     [postInfo.mode]: postInfo.id,
     water: true,
@@ -78,18 +80,9 @@ function PostForm({ mode, id }) {
       } else {
         console.error(res.message);
       }
-      history.replace(history.location.pathname + history.location.search);
+      reFresh();
     }); */
   }, []);
-
-  const validate = useCallback(values => {
-    const errors = {}
-    if (values.fid === '-1') {
-      errors.content = '时间线不可以';
-    }
-    return errors
-  }, []);
-
 
   return (
     <div id="post-form" {...getRootProps()}>
@@ -112,15 +105,9 @@ function PostForm({ mode, id }) {
 
       <div className="post-item">
         <label {...label('content')}>正文</label>
-        <input {...textarea({
-          name: 'content',
-          validate: (value, values) => {
-            if (values.fid === '-1') return '时间线不可以';
-            if (!value && !values.image) return '必须填写正文';
-          }
-        })} />
+        <input {...textarea('content')} />
       </div>
-      <div>
+      <div className="post-item">
         <label {...label('water')}>水印</label>
         <input {...checkbox('water')} />
         {cookies.get('admin') && //红名检测,更加建议用classname方式
@@ -131,9 +118,15 @@ function PostForm({ mode, id }) {
         }
       </div>
       <button onClick={formState.reset} >清空</button>
-      <button onClick={() => onSubmit(formState.values)} >发送</button>
+      <button 
+        onClick={() => onSubmit(formState.values)} 
+        disabled={
+          !formState.validity.content && 
+          !formState.validity.image
+        }
+      >发送</button>
       {formState.values.image && <Thumb file={formState.values.image} />}
-      {<pre>{JSON.stringify(formState, 0, 2)}</pre>}
+      {/*<pre>{JSON.stringify(formState, 0, 2)}</pre>*/}
     </div>
   )
 

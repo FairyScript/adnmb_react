@@ -23,7 +23,6 @@ function Thumb(props) {
         <img src={thumb}
             alt={file.name}
             className="img-thumbnail"
-            height={200}
             width={200} />
     )
 }

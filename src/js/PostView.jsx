@@ -9,9 +9,10 @@ import { Thumb } from './Thumb';
 import '../css/PostView.scss'
 
 const cookies = new Cookies();
+const storage = window.localStorage;
 
 function PostView({ match }) {
-  const {mode,id} = match.params;
+  const { mode, id } = match.params;
   const { forumList, history } = useContext(DataStore);
   const reFresh = () => history.replace(history.location.pathname + history.location.search);
   //构造resto/fid
@@ -25,7 +26,7 @@ function PostView({ match }) {
       postInfo = { mode: 'resto', msg: '回应模式', id: id };
       break
     }
-    default: postInfo = {mode: 'error', msg: '未知的mode'}
+    default: postInfo = { mode: 'error', msg: '未知的mode' }
   }
   return (
     <div className="post-view">
@@ -41,7 +42,7 @@ function DebugTool() {
   return null;
 }
 
-function PostForm({postInfo,reFresh}) {
+function PostForm({ postInfo, reFresh }) {
 
   const initState = {
     [postInfo.mode]: postInfo.id,
@@ -67,7 +68,7 @@ function PostForm({postInfo,reFresh}) {
     //构造formData
     let formData = new FormData();
     for (let key in values) {
-      values[key] && formData.append(key, values[key]);
+      values[key] && formData.set(key, values[key]);
     }
     //console.log(values);
     for (let pair of formData.entries()) {
@@ -112,16 +113,16 @@ function PostForm({postInfo,reFresh}) {
         <input {...checkbox('water')} />
         {cookies.get('admin') && //红名检测,更加建议用classname方式
           <>
-          <label {...label('isManager')}>红名</label>
-          <input {...checkbox('isManager')} />
+            <label {...label('isManager')}>红名</label>
+            <input {...checkbox('isManager')} />
           </>
         }
       </div>
       <button onClick={formState.reset} >清空</button>
-      <button 
-        onClick={() => onSubmit(formState.values)} 
+      <button
+        onClick={() => onSubmit(formState.values)}
         disabled={
-          !formState.validity.content && 
+          !formState.validity.content &&
           !formState.validity.image
         }
       >发送</button>
@@ -138,33 +139,37 @@ function PostForm({postInfo,reFresh}) {
  */
 function ToolBar() {
   //Cookie Switch
-  const [activeCookie, setActiveCookie] = useState(cookies.get('userhash'));
+  //const [cookieJar, setCookieJar] = useState(storage.cookieJar);
   const handleChange = useCallback(({ value }) => {
-    setActiveCookie(value)
+    storage.activeCookie = value;
     cookies.set('userhash', value);
     console.log('Select Cookie:', value);
   }, []);
 
-  const storage = window.localStorage;
-  let cookieJar = [];
-  if (storage.cookie) {
-    cookieJar = JSON.parse(storage.cookie)
-  } else if (activeCookie) {
-    cookieJar = [{ label: '当前饼干', value: activeCookie }];
-    storage.cookie = JSON.stringify(cookieJar);
-  };
+  let cookieJar = storage.cookieJar;
+  let select;
+  if (!cookieJar) {//storage为空
+    let optText;
+    cookies.get('userhash') ? optText = '当前饼干' : optText = '没有饼干';
+    select = <Select isDisabled={true} options={{value: '', label: optText }} />;//buggy
+  } else {
+    cookieJar = JSON.parse(cookieJar);
+    let activeCookie = cookies.get('userhash');
+    select = (
+      <Select
+        className="cookie-select"
+        defaultValue={cookieJar.find(e => e.value === activeCookie)}
+        onChange={handleChange}
+        options={cookieJar}
+      />
+    );
+  }
 
   return (
     <div className="tool-bar">
       <div className="cookie-switch">
         <label>饼干</label>
-        <Select
-          className="cookie-select"
-          defaultValue={cookieJar.find(e => e.value === activeCookie)}
-          isDisabled={!activeCookie}
-          onChange={handleChange}
-          options={cookieJar}
-        />
+          {select}
         <button className="get-cookie">获取饼干</button>
       </div>
 

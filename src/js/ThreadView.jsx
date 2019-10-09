@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import Zmage from 'react-zmage';
+import {html} from 'htm/react';
 import ReactHtmlParser from 'react-html-parser';
 import { path, getForum, getThread, getRef, getParent } from '../api/api';
 import { DataStore } from './MainPage';
@@ -165,6 +166,9 @@ function ThreadMain(props) {
       )
     }
   }, [])
+
+  let textContent = props.content.content;
+  
 
   return (
     <div className="thread-main">

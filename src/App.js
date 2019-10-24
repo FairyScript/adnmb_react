@@ -9,7 +9,6 @@
 
 import React from 'react';
 import { MainPage } from './js/MainPage';
-import {Test} from './js/test/test';
 function App() {
   return (
     <MainPage />

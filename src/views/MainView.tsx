@@ -1,21 +1,17 @@
-import { Layout } from "antd"
-import { Content, Header } from "antd/lib/layout/layout"
-import Sider from "antd/lib/layout/Sider"
+import { css } from "@emotion/react";
+import { Grid } from "@material-ui/core";
+import ForumListView from "../components/ForumListView"
 
 const MainView: React.FC = () => {
   return (
-    <Layout>
-      <Sider width="20%" >
+    <Grid container>
+      <Grid item css={css`
+        width: 20vw;
 
-      </Sider>
-      <Layout>
-        <Header>
-        </Header>
-        <Content>
-
-        </Content>
-      </Layout>
-    </Layout>
+      `}>
+        <ForumListView />
+      </Grid>
+    </Grid>
   );
 }
 

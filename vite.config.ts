@@ -4,8 +4,8 @@ import reactRefresh from '@vitejs/plugin-react-refresh'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [reactRefresh()],
-  server:{
-    proxy:{
+  server: {
+    proxy: {
       '/api': {
         target: 'https://adnmb3.com/',
         changeOrigin: true,

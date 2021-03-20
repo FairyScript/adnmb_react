@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [reactRefresh()],
   server:{
     proxy:{
-      'api/': {
-        target: 'https://adnmb3.com/api',
+      '/api': {
+        target: 'https://adnmb3.com/',
         changeOrigin: true,
       }
     }

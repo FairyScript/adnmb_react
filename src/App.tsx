@@ -1,3 +1,4 @@
+import { css, Global } from '@emotion/react'
 import { useEffect } from 'react'
 import { Route, BrowserRouter, Switch, Redirect } from 'react-router-dom'
 import { getForumList } from './api/api'
@@ -9,6 +10,11 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
+      <Global styles={css`
+        html,body {
+          margin: 0;
+        }
+      `} />
       <Switch>
         <Route exact path="/">
           <Redirect to="/Forum" />

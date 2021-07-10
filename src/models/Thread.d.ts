@@ -2,18 +2,21 @@ declare interface ThreadItemBase {
   id: string
   img: string
   ext: string
-  now: string
+  now: Date
   userid: string
   name: string
   email: string
   title: string
   content: string
-  sage: string
+  sage: boolean
   admin: string
+  status: string
+  bannedip: boolean
+  cookieValid: boolean
 }
 
 declare interface MainThreadItem extends ThreadItemBase {
-  remainReplys: string
-  replyCount: string
+  remainReplys?: number
+  replyCount: number
   replys: ThreadItemBase[]
 }
